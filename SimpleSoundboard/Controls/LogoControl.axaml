@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="SimpleSoundboard.Controls.LogoControl">
     <!-- The app logo. Source of truth is Assets/logo.png; the .ico is generated
-         from it (see Tools/IconGenerator.cs). Replace logo.png to rebrand. -->
-    <Image Source="avares://SimpleSoundboard/Assets/logo.png" Stretch="Uniform" />
+         from it (see Tools/IconGenerator.cs). Replace logo.png to rebrand.
+         The image is loaded in code-behind so a missing file doesn't crash. -->
+    <Image Name="LogoImage" Stretch="Uniform" />
 </UserControl>

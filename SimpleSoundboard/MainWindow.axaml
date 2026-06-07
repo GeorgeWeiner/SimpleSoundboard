@@ -185,15 +185,48 @@
                     </DockPanel>
                 </Border>
 
-                <!-- Sound grid -->
-                <ScrollViewer>
-                    <Panel>
-                        <TextBlock Name="EmptyHint"
-                                   Text="No sounds yet — hit &quot;Add sound&quot; to drop some in."
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   Margin="0,40,0,0" Opacity="0.4" FontSize="14"
-                                   IsVisible="False" />
-                        <ItemsControl Name="SoundList">
+                <!-- Sound area: category tabs + grid -->
+                <DockPanel>
+                    <!-- Category tabs -->
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <Button DockPanel.Dock="Right" Classes="tab" Click="OnAddCategory"
+                                FontFamily="Segoe Fluent Icons" Content="&#xE710;"
+                                ToolTip.Tip="New category" VerticalAlignment="Center" />
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Disabled">
+                            <ItemsControl Name="CategoryTabs">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:CategoryTab">
+                                        <Button Classes="tab" Classes.active="{Binding IsSelected}"
+                                                Click="OnTabClick" Content="{Binding Name}">
+                                            <Button.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Rename…" Click="OnRenameCategory"
+                                                              IsVisible="{Binding !IsAll}" />
+                                                    <MenuItem Header="Delete" Click="OnDeleteCategory"
+                                                              IsVisible="{Binding !IsAll}" />
+                                                </ContextMenu>
+                                            </Button.ContextMenu>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
+
+                    <ScrollViewer>
+                        <Panel>
+                            <TextBlock Name="EmptyHint"
+                                       Text="No sounds here — add some or drop files in."
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Margin="0,40,0,0" Opacity="0.4" FontSize="14"
+                                       IsVisible="False" />
+                            <ItemsControl Name="SoundList">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel />
@@ -214,6 +247,7 @@
                                                 <MenuItem Header="Loop" ToggleType="CheckBox"
                                                           IsChecked="{Binding IsLooping, Mode=TwoWay}"
                                                           Click="OnLoopClick" />
+                                                <MenuItem Header="Category…" Click="OnSetCategory" />
                                                 <Separator />
                                                 <MenuItem Header="Remove" Click="OnRemoveClick" />
                                             </ContextMenu>
@@ -237,9 +271,10 @@
                                     </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Panel>
-                </ScrollViewer>
+                            </ItemsControl>
+                        </Panel>
+                    </ScrollViewer>
+                </DockPanel>
             </DockPanel>
         </DockPanel>
 

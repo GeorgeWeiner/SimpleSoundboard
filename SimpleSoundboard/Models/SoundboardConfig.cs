@@ -6,6 +6,13 @@ namespace SimpleSoundboard.Models;
 public sealed class SoundboardConfig
 {
     public List<SoundClip> Sounds { get; set; } = new();
+
+    /// <summary>User-defined categories, in tab order.</summary>
+    public List<string> Categories { get; set; } = new();
+
+    /// <summary>Last selected category tab, or null for "All".</summary>
+    public string? SelectedCategory { get; set; }
+
     public double Volume { get; set; } = 80;
 
     /// <summary>Play to the local monitor device (so you hear it too).</summary>

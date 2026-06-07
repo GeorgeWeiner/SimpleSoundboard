@@ -20,6 +20,9 @@ public partial class MainWindow : Window
     private readonly AudioEngine _engine = new();
     private readonly SoundboardConfig _config;
     private readonly ObservableCollection<SoundClip> _sounds;
+    private readonly ObservableCollection<SoundClip> _visibleSounds = new();
+    private readonly ObservableCollection<CategoryTab> _tabs = new();
+    private string? _activeCategory;
     private readonly ObservableCollection<Playback> _playing = new();
     private readonly DispatcherTimer _uiTimer;
     private OutputDevice? _vbCable;
@@ -34,8 +37,9 @@ public partial class MainWindow : Window
 
         _config = SoundboardConfig.Load();
         _sounds = new ObservableCollection<SoundClip>(_config.Sounds);
-        SoundList.ItemsSource = _sounds;
-        _sounds.CollectionChanged += (_, _) => UpdateEmptyHint();
+        SoundList.ItemsSource = _visibleSounds;
+        CategoryTabs.ItemsSource = _tabs;
+        _activeCategory = ResolveCategory(_config.SelectedCategory);
 
         // Initialise controls from config BEFORE seeding, because seeding may
         // call SaveConfig() and that reads these controls.
@@ -50,7 +54,8 @@ public partial class MainWindow : Window
 
         SeedDefaultSounds();
         ReorderFavorites();
-        UpdateEmptyHint();
+        RebuildTabs();
+        RefreshVisibleSounds();
 
         // Now Playing panel
         PlayingList.ItemsSource = _playing;
@@ -86,7 +91,164 @@ public partial class MainWindow : Window
         Closing += OnWindowClosing;
     }
 
-    private void UpdateEmptyHint() => EmptyHint.IsVisible = _sounds.Count == 0;
+    // --- Categories ---
+
+    private string? ResolveCategory(string? name) =>
+        !string.IsNullOrEmpty(name) && _config.Categories.Contains(name) ? name : null;
+
+    /// <summary>Rebuilds the tab bar: "All" plus every category, marking the active one.</summary>
+    private void RebuildTabs()
+    {
+        _tabs.Clear();
+        _tabs.Add(new CategoryTab { Name = "All", IsAll = true, IsSelected = _activeCategory is null });
+        foreach (var category in _config.Categories)
+        {
+            _tabs.Add(new CategoryTab { Name = category, IsSelected = category == _activeCategory });
+        }
+    }
+
+    /// <summary>Rebuilds the visible grid from the master list, filtered by the active tab.</summary>
+    private void RefreshVisibleSounds()
+    {
+        _visibleSounds.Clear();
+        foreach (var clip in _sounds)
+        {
+            if (_activeCategory is null || clip.Category == _activeCategory)
+            {
+                _visibleSounds.Add(clip);
+            }
+        }
+
+        EmptyHint.IsVisible = _visibleSounds.Count == 0;
+    }
+
+    private void SetActiveCategory(string? category)
+    {
+        _activeCategory = category;
+        foreach (var tab in _tabs)
+        {
+            tab.IsSelected = tab.IsAll ? category is null : tab.Name == category;
+        }
+
+        RefreshVisibleSounds();
+        _config.SelectedCategory = category;
+        SaveConfig();
+    }
+
+    private void OnTabClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button { DataContext: CategoryTab tab })
+        {
+            SetActiveCategory(tab.IsAll ? null : tab.Name);
+        }
+    }
+
+    private async void OnAddCategory(object? sender, RoutedEventArgs e)
+    {
+        var name = await new RenameDialog("", "New category", "Category name").ShowDialog<string?>(this);
+        name = name?.Trim();
+        if (string.IsNullOrEmpty(name))
+        {
+            return;
+        }
+
+        if (name == "All" || _config.Categories.Contains(name))
+        {
+            StatusText.Text = $"Category \"{name}\" already exists.";
+            return;
+        }
+
+        _config.Categories.Add(name);
+        RebuildTabs();
+        SetActiveCategory(name); // selects it + saves
+    }
+
+    private async void OnRenameCategory(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem { DataContext: CategoryTab tab } || tab.IsAll)
+        {
+            return;
+        }
+
+        var newName = await new RenameDialog(tab.Name, "Rename category", "Category name")
+            .ShowDialog<string?>(this);
+        newName = newName?.Trim();
+        if (string.IsNullOrEmpty(newName) || newName == tab.Name)
+        {
+            return;
+        }
+
+        if (newName == "All" || _config.Categories.Contains(newName))
+        {
+            StatusText.Text = $"Category \"{newName}\" already exists.";
+            return;
+        }
+
+        var old = tab.Name;
+        int index = _config.Categories.IndexOf(old);
+        if (index >= 0)
+        {
+            _config.Categories[index] = newName;
+        }
+
+        foreach (var clip in _sounds.Where(s => s.Category == old))
+        {
+            clip.Category = newName;
+        }
+
+        if (_activeCategory == old)
+        {
+            _activeCategory = newName;
+        }
+
+        RebuildTabs();
+        RefreshVisibleSounds();
+        _config.SelectedCategory = _activeCategory;
+        SaveConfig();
+    }
+
+    private void OnDeleteCategory(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem { DataContext: CategoryTab tab } || tab.IsAll)
+        {
+            return;
+        }
+
+        _config.Categories.Remove(tab.Name);
+        foreach (var clip in _sounds.Where(s => s.Category == tab.Name))
+        {
+            clip.Category = "";
+        }
+
+        if (_activeCategory == tab.Name)
+        {
+            _activeCategory = null;
+        }
+
+        RebuildTabs();
+        RefreshVisibleSounds();
+        _config.SelectedCategory = _activeCategory;
+        SaveConfig();
+        StatusText.Text = $"Deleted category \"{tab.Name}\".";
+    }
+
+    private async void OnSetCategory(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem { DataContext: SoundClip clip })
+        {
+            return;
+        }
+
+        var chosen = await new CategoryDialog(_config.Categories, clip.Category).ShowDialog<string?>(this);
+        if (chosen is null) // cancelled
+        {
+            return;
+        }
+
+        clip.Category = chosen;
+        RefreshVisibleSounds(); // it may leave the current filtered view
+        SaveConfig();
+    }
 
     /// <summary>
     /// Adds bundled example sounds from Assets/Sounds the first time each appears.
@@ -422,13 +584,15 @@ public partial class MainWindow : Window
             _sounds.Add(new SoundClip
             {
                 Name = Path.GetFileNameWithoutExtension(path),
-                FilePath = path
+                FilePath = path,
+                Category = _activeCategory ?? ""
             });
             added++;
         }
 
         if (added > 0)
         {
+            RefreshVisibleSounds();
             SaveConfig();
         }
 
@@ -528,6 +692,7 @@ public partial class MainWindow : Window
         if (sender is MenuItem { DataContext: SoundClip })
         {
             ReorderFavorites();
+            RefreshVisibleSounds();
             SaveConfig();
         }
     }
@@ -546,6 +711,7 @@ public partial class MainWindow : Window
         if (sender is MenuItem { DataContext: SoundClip clip })
         {
             _sounds.Remove(clip);
+            RefreshVisibleSounds();
             SaveConfig();
         }
     }

@@ -21,6 +21,9 @@ public sealed class SoundClip : INotifyPropertyChanged
 
     public string FilePath { get; set; } = "";
 
+    /// <summary>Category this sound belongs to. Empty = uncategorized (shown under "All").</summary>
+    public string Category { get; set; } = "";
+
     /// <summary>Pinned favorites sort to the front of the board.</summary>
     public bool IsFavorite
     {

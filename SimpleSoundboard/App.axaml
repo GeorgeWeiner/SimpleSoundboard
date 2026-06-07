@@ -96,6 +96,24 @@
             <Setter Property="Background" Value="#9c4a43" />
         </Style>
 
+        <!-- Category tabs -->
+        <Style Selector="Button.tab">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Cream}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Margin" Value="0,0,6,0" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.tab:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#552f4442" />
+        </Style>
+        <Style Selector="Button.tab.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Primary}" />
+        </Style>
+
         <!-- Mini icon buttons (e.g. per-sound stop in Now Playing) -->
         <Style Selector="Button.mini">
             <Setter Property="Background" Value="Transparent" />

@@ -11,9 +11,11 @@ public partial class RenameDialog : Window
     {
     }
 
-    public RenameDialog(string currentName)
+    public RenameDialog(string currentName, string title = "Rename sound", string label = "Button name")
     {
         InitializeComponent();
+        Title = title;
+        LabelText.Text = label;
         NameBox.Text = currentName;
         Opened += (_, _) =>
         {

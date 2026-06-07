@@ -1,16 +1,15 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="SimpleSoundboard.Controls.RenameDialog"
-        Title="Rename sound"
+        x:Class="SimpleSoundboard.Controls.CategoryDialog"
+        Title="Move to category"
         Width="340" SizeToContent="Height"
         CanResize="False" ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         Background="#2f4442">
 
     <StackPanel Margin="18" Spacing="12">
-        <TextBlock Name="LabelText" Text="Button name" Foreground="{StaticResource Cream}"
-                   FontWeight="SemiBold" />
-        <TextBox Name="NameBox" Watermark="Name" />
+        <TextBlock Text="Category" Foreground="{StaticResource Cream}" FontWeight="SemiBold" />
+        <ComboBox Name="CategoryCombo" HorizontalAlignment="Stretch" />
         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
             <Button Classes="tool" Content="Cancel" Click="OnCancel" />
             <Button Classes="tool" Content="Save" Click="OnSave" IsDefault="True" />
