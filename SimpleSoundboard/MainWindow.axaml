@@ -64,8 +64,31 @@
                            TextWrapping="Wrap" />
             </Border>
 
-            <!-- Body -->
-            <DockPanel Margin="16,6,16,8">
+            <!-- Left navigation rail -->
+            <Border DockPanel.Dock="Left" Width="62" Margin="8,2,0,8">
+                <StackPanel Spacing="8" Margin="6,6">
+                    <Button Classes="nav active" Name="NavSoundboard" Click="OnNavSoundboard"
+                            ToolTip.Tip="Soundboard">
+                        <StackPanel Spacing="3">
+                            <TextBlock FontFamily="Segoe Fluent Icons" Text="&#xE8D6;" FontSize="20"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="Board" FontSize="10" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="nav" Name="NavVoice" Click="OnNavVoice" ToolTip.Tip="Voice Changer">
+                        <StackPanel Spacing="3">
+                            <TextBlock FontFamily="Segoe Fluent Icons" Text="&#xE720;" FontSize="20"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="Voice" FontSize="10" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Content host -->
+            <Panel>
+            <!-- Soundboard view -->
+            <DockPanel Name="SoundboardView" Margin="12,4,16,8">
                 <!-- Toolbar card -->
                 <Border DockPanel.Dock="Top" Background="{DynamicResource SurfaceSoft}" CornerRadius="12"
                         BorderBrush="{DynamicResource Hairline}" BorderThickness="1"
@@ -289,6 +312,84 @@
                     </ScrollViewer>
                 </DockPanel>
             </DockPanel>
+
+            <!-- Voice Changer view -->
+            <ScrollViewer Name="VoiceView" IsVisible="False" Margin="12,4,16,8"
+                          x:DataType="audio:VoiceEffectSettings">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="VOICE CHANGER" FontWeight="Bold" FontSize="13" Opacity="0.85" />
+                    <TextBlock Name="VoiceHint" FontSize="12" Opacity="0.6" TextWrapping="Wrap"
+                               Text="Effects process your microphone into VB-Cable. Turn on Mic routing in the Soundboard tab." />
+
+                    <!-- Pitch -->
+                    <Border Background="{DynamicResource SurfaceSoft}" CornerRadius="12"
+                            BorderBrush="{DynamicResource Hairline}" BorderThickness="1" Padding="14,12">
+                        <StackPanel Spacing="8">
+                            <CheckBox Content="Pitch" FontWeight="SemiBold"
+                                      IsChecked="{Binding PitchEnabled, Mode=TwoWay}" />
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <TextBlock Text="Low" Opacity="0.6" VerticalAlignment="Center" />
+                                <Slider Grid.Column="1" Margin="8,0" Minimum="0.5" Maximum="2"
+                                        Value="{Binding Pitch, Mode=TwoWay}" />
+                                <TextBlock Grid.Column="2" Text="High" Opacity="0.6" VerticalAlignment="Center" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Robot -->
+                    <Border Background="{DynamicResource SurfaceSoft}" CornerRadius="12"
+                            BorderBrush="{DynamicResource Hairline}" BorderThickness="1" Padding="14,12">
+                        <StackPanel Spacing="8">
+                            <CheckBox Content="Robot" FontWeight="SemiBold"
+                                      IsChecked="{Binding RobotEnabled, Mode=TwoWay}" />
+                            <Grid ColumnDefinitions="90,*">
+                                <TextBlock Text="Frequency" Opacity="0.6" VerticalAlignment="Center" />
+                                <Slider Grid.Column="1" Minimum="10" Maximum="250"
+                                        Value="{Binding RobotFrequency, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Echo -->
+                    <Border Background="{DynamicResource SurfaceSoft}" CornerRadius="12"
+                            BorderBrush="{DynamicResource Hairline}" BorderThickness="1" Padding="14,12">
+                        <StackPanel Spacing="8">
+                            <CheckBox Content="Echo" FontWeight="SemiBold"
+                                      IsChecked="{Binding EchoEnabled, Mode=TwoWay}" />
+                            <Grid ColumnDefinitions="90,*">
+                                <TextBlock Text="Delay" Opacity="0.6" VerticalAlignment="Center" />
+                                <Slider Grid.Column="1" Minimum="50" Maximum="600"
+                                        Value="{Binding EchoDelayMs, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid ColumnDefinitions="90,*">
+                                <TextBlock Text="Feedback" Opacity="0.6" VerticalAlignment="Center" />
+                                <Slider Grid.Column="1" Minimum="0" Maximum="0.9"
+                                        Value="{Binding EchoFeedback, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid ColumnDefinitions="90,*">
+                                <TextBlock Text="Mix" Opacity="0.6" VerticalAlignment="Center" />
+                                <Slider Grid.Column="1" Minimum="0" Maximum="1"
+                                        Value="{Binding EchoMix, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Distortion -->
+                    <Border Background="{DynamicResource SurfaceSoft}" CornerRadius="12"
+                            BorderBrush="{DynamicResource Hairline}" BorderThickness="1" Padding="14,12">
+                        <StackPanel Spacing="8">
+                            <CheckBox Content="Distortion" FontWeight="SemiBold"
+                                      IsChecked="{Binding DistortionEnabled, Mode=TwoWay}" />
+                            <Grid ColumnDefinitions="90,*">
+                                <TextBlock Text="Drive" Opacity="0.6" VerticalAlignment="Center" />
+                                <Slider Grid.Column="1" Minimum="0" Maximum="1"
+                                        Value="{Binding DistortionDrive, Mode=TwoWay}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+            </Panel>
         </DockPanel>
 
         <!-- Drag-and-drop overlay (shown while dragging files over the window) -->

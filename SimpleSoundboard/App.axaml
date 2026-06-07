@@ -83,6 +83,23 @@
             <Setter Property="Background" Value="#9c4a43" />
         </Style>
 
+        <!-- Left navigation rail -->
+        <Style Selector="Button.nav">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource Cream}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="0,10" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.nav:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource HoverSurface}" />
+        </Style>
+        <Style Selector="Button.nav.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Primary}" />
+        </Style>
+
         <!-- Category tabs -->
         <Style Selector="Button.tab">
             <Setter Property="Background" Value="Transparent" />

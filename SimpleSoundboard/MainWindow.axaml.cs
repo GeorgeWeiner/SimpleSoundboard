@@ -44,6 +44,7 @@ public partial class MainWindow : Window
 
         _config = SoundboardConfig.Load();
         UpdateWindowChrome(Themes.ByName(_config.Theme)); // resources already set by App
+        VoiceView.DataContext = _config.VoiceEffects;
         _sounds = new ObservableCollection<SoundClip>(_config.Sounds);
         SoundList.ItemsSource = _visibleSounds;
         CategoryTabs.ItemsSource = _tabs;
@@ -405,6 +406,25 @@ public partial class MainWindow : Window
 
     private void OnClose(object? sender, RoutedEventArgs e) => Close();
 
+    private void OnNavSoundboard(object? sender, RoutedEventArgs e) => ShowView(soundboard: true);
+
+    private void OnNavVoice(object? sender, RoutedEventArgs e) => ShowView(soundboard: false);
+
+    private void ShowView(bool soundboard)
+    {
+        SoundboardView.IsVisible = soundboard;
+        VoiceView.IsVisible = !soundboard;
+        NavSoundboard.Classes.Set("active", soundboard);
+        NavVoice.Classes.Set("active", !soundboard);
+
+        if (!soundboard)
+        {
+            VoiceHint.Text = _engine.IsMicPassthroughActive
+                ? "Live — effects are processing your mic into VB-Cable."
+                : "Effects process your microphone into VB-Cable. Turn on Mic routing in the Soundboard tab.";
+        }
+    }
+
     private async void OnSettings(object? sender, RoutedEventArgs e)
     {
         var dialog = new SettingsWindow(_config.Theme, ApplyTheme);
@@ -582,7 +602,7 @@ public partial class MainWindow : Window
 
         try
         {
-            _engine.StartMicPassthrough(mic, _vbCable);
+            _engine.StartMicPassthrough(mic, _vbCable, _config.VoiceEffects);
             StatusText.Text = $"Mic → VB-Cable live ({mic.Name}).";
         }
         catch (Exception ex)

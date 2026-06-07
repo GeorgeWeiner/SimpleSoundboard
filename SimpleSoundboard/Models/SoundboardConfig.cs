@@ -35,6 +35,9 @@ public sealed class SoundboardConfig
     /// <summary>WASAPI id of the chosen mic, or null to follow the system default.</summary>
     public string? MicDeviceId { get; set; }
 
+    /// <summary>Voice-changer effect settings.</summary>
+    public Audio.VoiceEffectSettings VoiceEffects { get; set; } = new();
+
     /// <summary>
     /// File names of bundled Assets/Sounds examples that have already been added
     /// to the board. Each default is seeded once; if the user removes it, it

@@ -102,8 +102,8 @@ public sealed class AudioEngine : IDisposable
     }
 
     /// <summary>Starts piping <paramref name="mic"/> into <paramref name="output"/> (VB-Cable).</summary>
-    public void StartMicPassthrough(OutputDevice mic, OutputDevice output) =>
-        _micPassthrough.Start(mic.Device, output.Device);
+    public void StartMicPassthrough(OutputDevice mic, OutputDevice output, VoiceEffectSettings? effects = null) =>
+        _micPassthrough.Start(mic.Device, output.Device, effects);
 
     public void StopMicPassthrough() => _micPassthrough.Stop();
 

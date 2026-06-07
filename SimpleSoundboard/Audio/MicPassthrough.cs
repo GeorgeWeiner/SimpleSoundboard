@@ -18,7 +18,7 @@ public sealed class MicPassthrough : IDisposable
     public bool IsActive => _capture is not null;
 
     /// <summary>Starts piping <paramref name="input"/> into <paramref name="output"/>.</summary>
-    public void Start(MMDevice input, MMDevice output)
+    public void Start(MMDevice input, MMDevice output, VoiceEffectSettings? effects = null)
     {
         Stop();
 
@@ -30,8 +30,15 @@ public sealed class MicPassthrough : IDisposable
         };
         capture.DataAvailable += (_, e) => buffer.AddSamples(e.Buffer, 0, e.BytesRecorded);
 
-        // Match the output's channel count (a mono mic into a stereo cable).
         ISampleProvider source = buffer.ToSampleProvider();
+
+        // Voice-changer effect chain (reads its settings live).
+        if (effects is not null)
+        {
+            source = VoiceEffects.BuildChain(source, effects);
+        }
+
+        // Match the output's channel count (a mono mic into a stereo cable).
         var mixFormat = output.AudioClient.MixFormat;
         if (source.WaveFormat.Channels == 1 && mixFormat.Channels >= 2)
         {
