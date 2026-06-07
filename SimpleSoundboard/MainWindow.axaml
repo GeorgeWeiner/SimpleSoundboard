@@ -234,7 +234,8 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="models:SoundClip">
-                                    <Button Classes="sound" Click="OnPlayClick"
+                                    <Button Classes="sound" Classes.selected="{Binding IsSelected}"
+                                            Click="OnPlayClick"
                                             Width="148" Height="68" Margin="6"
                                             HorizontalContentAlignment="Stretch"
                                             VerticalContentAlignment="Stretch">

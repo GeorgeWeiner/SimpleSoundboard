@@ -23,6 +23,9 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<SoundClip> _visibleSounds = new();
     private readonly ObservableCollection<CategoryTab> _tabs = new();
     private string? _activeCategory;
+    private readonly HashSet<SoundClip> _selection = new();
+    private SoundClip? _selectionAnchor;
+    private KeyModifiers _lastModifiers;
     private readonly ObservableCollection<Playback> _playing = new();
     private readonly DispatcherTimer _uiTimer;
     private OutputDevice? _vbCable;
@@ -82,6 +85,12 @@ public partial class MainWindow : Window
             }
         };
 
+        // Capture modifiers at press time and handle right-click / background
+        // selection. handledEventsToo so it still runs when a button handles it.
+        // Tunnel fires before the button handles the press, so we see the
+        // modifiers and can drive selection without fighting the click.
+        SoundList.AddHandler(PointerPressedEvent, OnSoundPressed, RoutingStrategies.Tunnel);
+
         // Drag-and-drop audio files onto the window to add them.
         DragDrop.SetAllowDrop(this, true);
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
@@ -124,6 +133,7 @@ public partial class MainWindow : Window
 
     private void SetActiveCategory(string? category)
     {
+        ClearSelection(); // selection shouldn't span category tabs
         _activeCategory = category;
         foreach (var tab in _tabs)
         {
@@ -239,14 +249,21 @@ public partial class MainWindow : Window
             return;
         }
 
-        var chosen = await new CategoryDialog(_config.Categories, clip.Category).ShowDialog<string?>(this);
+        var targets = ActionTargets(clip);
+        var current = targets.Count == 1 ? clip.Category : "";
+        var chosen = await new CategoryDialog(_config.Categories, current).ShowDialog<string?>(this);
         if (chosen is null) // cancelled
         {
             return;
         }
 
-        clip.Category = chosen;
-        RefreshVisibleSounds(); // it may leave the current filtered view
+        foreach (var target in targets)
+        {
+            target.Category = chosen;
+        }
+
+        ClearSelection();
+        RefreshVisibleSounds(); // they may leave the current filtered view
         SaveConfig();
     }
 
@@ -631,9 +648,29 @@ public partial class MainWindow : Window
             return;
         }
 
+        // Ctrl / Shift turn the click into a (de)selection instead of a play.
+        // Modifiers are captured at press time in OnSoundPressed.
+        if (_lastModifiers.HasFlag(KeyModifiers.Control))
+        {
+            ToggleSelect(clip);
+            return;
+        }
+
+        if (_lastModifiers.HasFlag(KeyModifiers.Shift))
+        {
+            RangeSelect(clip);
+            return;
+        }
+
+        ClearSelection();
+        PlayClip(clip);
+    }
+
+    private void PlayClip(SoundClip clip)
+    {
         try
         {
-            Log.Write($"OnPlayClick '{clip.Name}' file='{clip.EffectivePath}' " +
+            Log.Write($"PlayClip '{clip.Name}' file='{clip.EffectivePath}' " +
                       $"monitorChecked={MonitorCheck.IsChecked} " +
                       $"monitorSel='{(MonitorDeviceCombo.SelectedItem as OutputDevice)?.Name ?? "<null>"}' " +
                       $"vbChecked={VbCableCheck.IsChecked} vb='{_vbCable?.Name ?? "<null>"}' " +
@@ -671,8 +708,107 @@ public partial class MainWindow : Window
         }
     }
 
+    // --- Multi-selection ---
+
+    private void OnSoundPressed(object? sender, PointerPressedEventArgs e)
+    {
+        _lastModifiers = e.KeyModifiers;
+        var clip = (e.Source as StyledElement)?.DataContext as SoundClip;
+        var props = e.GetCurrentPoint(SoundList).Properties;
+
+        if (props.IsRightButtonPressed)
+        {
+            // Right-clicking an unselected sound selects just it, so the context
+            // menu acts on a sensible target. A selected one keeps the selection.
+            if (clip is not null && !_selection.Contains(clip))
+            {
+                SelectOnly(clip);
+            }
+        }
+        else if (props.IsLeftButtonPressed && clip is null)
+        {
+            ClearSelection(); // clicked empty space in the grid
+        }
+    }
+
+    /// <summary>Targets for a context action: the whole selection if the clicked clip is part of it.</summary>
+    private List<SoundClip> ActionTargets(SoundClip clicked) =>
+        _selection.Contains(clicked) && _selection.Count > 1
+            ? _selection.ToList()
+            : new List<SoundClip> { clicked };
+
+    private void SelectOnly(SoundClip clip)
+    {
+        ClearSelection();
+        _selection.Add(clip);
+        clip.IsSelected = true;
+        _selectionAnchor = clip;
+    }
+
+    private void ToggleSelect(SoundClip clip)
+    {
+        if (_selection.Remove(clip))
+        {
+            clip.IsSelected = false;
+        }
+        else
+        {
+            _selection.Add(clip);
+            clip.IsSelected = true;
+        }
+
+        _selectionAnchor = clip;
+    }
+
+    private void RangeSelect(SoundClip clip)
+    {
+        if (_selectionAnchor is null || !_visibleSounds.Contains(_selectionAnchor))
+        {
+            SelectOnly(clip);
+            return;
+        }
+
+        int a = _visibleSounds.IndexOf(_selectionAnchor);
+        int b = _visibleSounds.IndexOf(clip);
+        if (a < 0 || b < 0)
+        {
+            SelectOnly(clip);
+            return;
+        }
+
+        if (a > b)
+        {
+            (a, b) = (b, a);
+        }
+
+        foreach (var c in _selection)
+        {
+            c.IsSelected = false;
+        }
+
+        _selection.Clear();
+        for (int i = a; i <= b; i++)
+        {
+            _selection.Add(_visibleSounds[i]);
+            _visibleSounds[i].IsSelected = true;
+        }
+        // keep the existing anchor for further range extension
+    }
+
+    private void ClearSelection()
+    {
+        foreach (var clip in _selection)
+        {
+            clip.IsSelected = false;
+        }
+
+        _selection.Clear();
+        _selectionAnchor = null;
+    }
+
     private async void OnRenameClick(object? sender, RoutedEventArgs e)
     {
+        // Rename is single-target (renaming many to one name makes no sense).
         if (sender is not MenuItem { DataContext: SoundClip clip })
         {
             return;
@@ -688,9 +824,15 @@ public partial class MainWindow : Window
 
     private void OnFavoriteClick(object? sender, RoutedEventArgs e)
     {
-        // IsChecked is two-way bound, so clip.IsFavorite is already toggled here.
-        if (sender is MenuItem { DataContext: SoundClip })
+        // IsChecked is two-way bound, so clip.IsFavorite is already toggled here;
+        // mirror that value onto the rest of the selection.
+        if (sender is MenuItem { DataContext: SoundClip clip })
         {
+            foreach (var target in ActionTargets(clip))
+            {
+                target.IsFavorite = clip.IsFavorite;
+            }
+
             ReorderFavorites();
             RefreshVisibleSounds();
             SaveConfig();
@@ -700,8 +842,13 @@ public partial class MainWindow : Window
     private void OnLoopClick(object? sender, RoutedEventArgs e)
     {
         // IsChecked is two-way bound, so clip.IsLooping is already toggled here.
-        if (sender is MenuItem { DataContext: SoundClip })
+        if (sender is MenuItem { DataContext: SoundClip clip })
         {
+            foreach (var target in ActionTargets(clip))
+            {
+                target.IsLooping = clip.IsLooping;
+            }
+
             SaveConfig();
         }
     }
@@ -710,7 +857,12 @@ public partial class MainWindow : Window
     {
         if (sender is MenuItem { DataContext: SoundClip clip })
         {
-            _sounds.Remove(clip);
+            foreach (var target in ActionTargets(clip))
+            {
+                _sounds.Remove(target);
+            }
+
+            ClearSelection();
             RefreshVisibleSounds();
             SaveConfig();
         }

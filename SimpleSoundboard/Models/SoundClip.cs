@@ -11,6 +11,7 @@ public sealed class SoundClip : INotifyPropertyChanged
     private string _name = "";
     private bool _isFavorite;
     private bool _isLooping;
+    private bool _isSelected;
 
     /// <summary>Display name shown on the button (editable via rename).</summary>
     public string Name
@@ -36,6 +37,14 @@ public sealed class SoundClip : INotifyPropertyChanged
     {
         get => _isLooping;
         set => Set(ref _isLooping, value);
+    }
+
+    /// <summary>Transient UI multi-selection state (not persisted).</summary>
+    [JsonIgnore]
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => Set(ref _isSelected, value);
     }
 
     /// <summary>

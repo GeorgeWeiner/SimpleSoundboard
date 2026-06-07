@@ -60,6 +60,10 @@
         <Style Selector="Button.sound:pressed /template/ ContentPresenter">
             <Setter Property="Background" Value="{StaticResource Surface}" />
         </Style>
+        <Style Selector="Button.sound.selected /template/ ContentPresenter">
+            <Setter Property="BorderBrush" Value="{StaticResource Cream}" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
 
         <!-- Toolbar (ghost) buttons -->
         <Style Selector="Button.tool">
