@@ -77,7 +77,7 @@ public partial class MainWindow : Window
             }
         };
 
-        Closing += (_, _) => SaveConfig();
+        Closing += OnWindowClosing;
     }
 
     private void UpdateEmptyHint() => EmptyHint.IsVisible = _sounds.Count == 0;
@@ -206,6 +206,38 @@ public partial class MainWindow : Window
 
     private void ToggleMaximize() =>
         WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+
+    private bool _allowClose;
+
+    /// <summary>Lets the next close actually exit (used by the tray "Quit" item).</summary>
+    public void AllowClose() => _allowClose = true;
+
+    /// <summary>Restores the window from the system tray.</summary>
+    public void ShowFromTray()
+    {
+        Show();
+        WindowState = WindowState.Normal;
+        Activate();
+    }
+
+    /// <summary>
+    /// Closing the window hides it to the tray instead of quitting, so playback
+    /// keeps running. A real exit only happens via the tray "Quit" item.
+    /// </summary>
+    private void OnWindowClosing(object? sender, WindowClosingEventArgs e)
+    {
+        SaveConfig();
+
+        if (_allowClose)
+        {
+            _engine.Dispose();
+            return;
+        }
+
+        e.Cancel = true;
+        Hide();
+        StatusText.Text = "Running in the tray — playback continues.";
+    }
 
     private void DetectDevices()
     {
