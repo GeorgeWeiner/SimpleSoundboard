@@ -9,6 +9,7 @@ namespace SimpleSoundboard.Models;
 public sealed class SoundClip : INotifyPropertyChanged
 {
     private string _name = "";
+    private string _hotkey = "";
     private bool _isFavorite;
     private bool _isLooping;
     private bool _isSelected;
@@ -21,6 +22,13 @@ public sealed class SoundClip : INotifyPropertyChanged
     }
 
     public string FilePath { get; set; } = "";
+
+    /// <summary>Global hotkey gesture (e.g. "Ctrl+Shift+A"), or empty for none.</summary>
+    public string Hotkey
+    {
+        get => _hotkey;
+        set => Set(ref _hotkey, value);
+    }
 
     /// <summary>Category this sound belongs to. Empty = uncategorized (shown under "All").</summary>
     public string Category { get; set; } = "";

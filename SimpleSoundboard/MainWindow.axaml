@@ -5,6 +5,7 @@
         xmlns:models="clr-namespace:SimpleSoundboard.Models"
         xmlns:audio="clr-namespace:SimpleSoundboard.Audio"
         xmlns:controls="clr-namespace:SimpleSoundboard.Controls"
+        xmlns:conv="using:Avalonia.Data.Converters"
         mc:Ignorable="d"
         x:Class="SimpleSoundboard.MainWindow"
         x:DataType="models:SoundClip"
@@ -246,15 +247,29 @@
                                                           IsChecked="{Binding IsLooping, Mode=TwoWay}"
                                                           Click="OnLoopClick" />
                                                 <MenuItem Header="Category…" Click="OnSetCategory" />
+                                                <MenuItem Header="Set hotkey…" Click="OnSetHotkey" />
                                                 <Separator />
                                                 <MenuItem Header="Remove" Click="OnRemoveClick" />
                                             </ContextMenu>
                                         </Button.ContextMenu>
                                         <Panel>
-                                            <TextBlock Text="{Binding Name}" TextWrapping="Wrap"
-                                                       TextAlignment="Center" MaxLines="3"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
+                                            <!-- Name fills the area above the hotkey strip, so they
+                                                 never overlap. -->
+                                            <DockPanel>
+                                                <Border DockPanel.Dock="Bottom" HorizontalAlignment="Center"
+                                                        Background="{DynamicResource HoverInk}" CornerRadius="4"
+                                                        Margin="0,3,0,0" Padding="5,1"
+                                                        IsVisible="{Binding Hotkey, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}">
+                                                    <TextBlock Text="{Binding Hotkey}" FontSize="9"
+                                                               Foreground="{DynamicResource Cream}" Opacity="0.9" />
+                                                </Border>
+                                                <Viewbox Stretch="Uniform" Margin="2,2">
+                                                    <TextBlock Text="{Binding Name}" TextWrapping="Wrap"
+                                                               Width="134" MaxLines="2"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               TextAlignment="Center" FontSize="15" />
+                                                </Viewbox>
+                                            </DockPanel>
                                             <TextBlock Text="&#xE735;" FontFamily="Segoe Fluent Icons"
                                                        FontSize="12" Foreground="{DynamicResource Cream}"
                                                        HorizontalAlignment="Right" VerticalAlignment="Top"

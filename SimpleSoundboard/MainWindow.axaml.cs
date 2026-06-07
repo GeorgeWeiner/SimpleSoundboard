@@ -12,6 +12,7 @@ using Avalonia.Threading;
 using SimpleSoundboard.Audio;
 using SimpleSoundboard.Controls;
 using SimpleSoundboard.Diagnostics;
+using SimpleSoundboard.Hotkeys;
 using SimpleSoundboard.Models;
 using SimpleSoundboard.Theming;
 
@@ -30,6 +31,7 @@ public partial class MainWindow : Window
     private KeyModifiers _lastModifiers;
     private readonly ObservableCollection<Playback> _playing = new();
     private readonly DispatcherTimer _uiTimer;
+    private HotkeyManager? _hotkeys;
     private OutputDevice? _vbCable;
     private OutputDevice? _defaultDevice;
     private OutputDevice? _defaultMic;
@@ -101,6 +103,17 @@ public partial class MainWindow : Window
         AddHandler(DragDrop.DropEvent, OnDrop);
 
         Closing += OnWindowClosing;
+
+        // Global hotkeys need the native window handle, available once opened.
+        Opened += (_, _) =>
+        {
+            _hotkeys = new HotkeyManager(this);
+            if (_hotkeys.EnsureHooked())
+            {
+                RegisterAllHotkeys();
+            }
+        };
+
     }
 
     // --- Categories ---
@@ -456,6 +469,7 @@ public partial class MainWindow : Window
 
         if (_allowClose)
         {
+            _hotkeys?.UnregisterAll();
             _engine.Dispose();
             return;
         }
@@ -904,9 +918,78 @@ public partial class MainWindow : Window
             }
 
             ClearSelection();
+            RegisterAllHotkeys(); // drop hotkeys of removed sounds
             RefreshVisibleSounds();
             SaveConfig();
         }
+    }
+
+    // --- Global hotkeys ---
+
+    /// <summary>Re-registers every sound's hotkey (works regardless of the active category).</summary>
+    private void RegisterAllHotkeys()
+    {
+        if (_hotkeys is null)
+        {
+            return;
+        }
+
+        _hotkeys.UnregisterAll();
+        foreach (var clip in _sounds)
+        {
+            if (string.IsNullOrEmpty(clip.Hotkey))
+            {
+                continue;
+            }
+
+            KeyGesture gesture;
+            try
+            {
+                gesture = KeyGesture.Parse(clip.Hotkey);
+            }
+            catch
+            {
+                Log.Write($"Unparseable hotkey '{clip.Hotkey}' on '{clip.Name}'");
+                continue;
+            }
+
+            var captured = clip;
+            if (!_hotkeys.TryRegister(gesture, () => PlayClip(captured)))
+            {
+                Log.Write($"Hotkey register failed for '{clip.Name}' ({clip.Hotkey}) — in use?");
+            }
+        }
+    }
+
+    private async void OnSetHotkey(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem { DataContext: SoundClip clip })
+        {
+            return;
+        }
+
+        var result = await new HotkeyDialog(clip.Hotkey).ShowDialog<string?>(this);
+        if (result is null) // cancelled
+        {
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(result))
+        {
+            // A gesture maps to one sound — take it off any other clip.
+            foreach (var other in _sounds.Where(s => s != clip && s.Hotkey == result))
+            {
+                other.Hotkey = "";
+            }
+        }
+
+        clip.Hotkey = result;
+        RegisterAllHotkeys();
+        RefreshVisibleSounds();
+        SaveConfig();
+        StatusText.Text = string.IsNullOrEmpty(result)
+            ? $"Cleared hotkey for \"{clip.Name}\"."
+            : $"Hotkey {result} → \"{clip.Name}\".";
     }
 
     private void OnStopClick(object? sender, RoutedEventArgs e)
