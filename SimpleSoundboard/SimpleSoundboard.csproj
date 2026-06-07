@@ -33,6 +33,10 @@
              NAudio.Vorbis adds .ogg decoding. -->
         <PackageReference Include="NAudio" Version="2.2.1" />
         <PackageReference Include="NAudio.Vorbis" Version="1.5.0" />
+        <!-- Opus-in-Ogg decoding (e.g. Discord .ogg files), which NAudio.Vorbis
+             can't handle. Concentus is a pure-C# Opus decoder. -->
+        <PackageReference Include="Concentus" Version="1.1.7" />
+        <PackageReference Include="Concentus.OggFile" Version="1.0.4" />
     </ItemGroup>
 
 </Project>
