@@ -10,6 +10,7 @@ public sealed class SoundClip : INotifyPropertyChanged
 {
     private string _name = "";
     private bool _isFavorite;
+    private bool _isLooping;
 
     /// <summary>Display name shown on the button (editable via rename).</summary>
     public string Name
@@ -25,6 +26,13 @@ public sealed class SoundClip : INotifyPropertyChanged
     {
         get => _isFavorite;
         set => Set(ref _isFavorite, value);
+    }
+
+    /// <summary>When set, the sound repeats until stopped.</summary>
+    public bool IsLooping
+    {
+        get => _isLooping;
+        set => Set(ref _isLooping, value);
     }
 
     /// <summary>

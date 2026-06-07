@@ -158,9 +158,16 @@
                                                                Fill="{StaticResource Cream}" />
                                                 </Button>
                                                 <StackPanel Spacing="6">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
-                                                               FontSize="12"
-                                                               TextTrimming="CharacterEllipsis" />
+                                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                                        <TextBlock Text="&#xE8EE;"
+                                                                   FontFamily="Segoe Fluent Icons"
+                                                                   FontSize="11" VerticalAlignment="Center"
+                                                                   Opacity="0.85"
+                                                                   IsVisible="{Binding IsLooping}" />
+                                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                                   FontSize="12"
+                                                                   TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
                                                     <ProgressBar Minimum="0" Maximum="1"
                                                                  Value="{Binding Progress}" Height="4"
                                                                  MinWidth="0" HorizontalAlignment="Stretch"
@@ -204,6 +211,9 @@
                                                 <MenuItem Header="Favorite" ToggleType="CheckBox"
                                                           IsChecked="{Binding IsFavorite, Mode=TwoWay}"
                                                           Click="OnFavoriteClick" />
+                                                <MenuItem Header="Loop" ToggleType="CheckBox"
+                                                          IsChecked="{Binding IsLooping, Mode=TwoWay}"
+                                                          Click="OnLoopClick" />
                                                 <Separator />
                                                 <MenuItem Header="Remove" Click="OnRemoveClick" />
                                             </ContextMenu>
@@ -218,6 +228,11 @@
                                                        HorizontalAlignment="Right" VerticalAlignment="Top"
                                                        Margin="0,-3,-3,0"
                                                        IsVisible="{Binding IsFavorite}" />
+                                            <TextBlock Text="&#xE8EE;" FontFamily="Segoe Fluent Icons"
+                                                       FontSize="12" Foreground="{StaticResource Cream}"
+                                                       HorizontalAlignment="Left" VerticalAlignment="Top"
+                                                       Margin="-3,-3,0,0" Opacity="0.85"
+                                                       IsVisible="{Binding IsLooping}" />
                                         </Panel>
                                     </Button>
                                 </DataTemplate>

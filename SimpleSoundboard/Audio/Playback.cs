@@ -19,18 +19,23 @@ public sealed class Playback : INotifyPropertyChanged
 
     public string Name { get; }
     public TimeSpan Duration { get; }
+    public bool IsLooping { get; }
 
     /// <summary>Raised (off the UI thread) once every output has stopped.</summary>
     public event Action<Playback>? Finished;
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    internal Playback(string name, TimeSpan duration)
+    internal Playback(string name, TimeSpan duration, bool isLooping = false)
     {
         Name = name;
         Duration = duration;
+        IsLooping = isLooping;
     }
 
-    /// <summary>Elapsed wall-clock position, capped at the clip's duration.</summary>
+    /// <summary>
+    /// Elapsed wall-clock position. Capped at the clip's duration for one-shots;
+    /// wraps modulo the duration for looping sounds so the bar cycles.
+    /// </summary>
     public TimeSpan Position
     {
         get
@@ -41,6 +46,11 @@ public sealed class Playback : INotifyPropertyChanged
             }
 
             var elapsed = _clock.Elapsed;
+            if (IsLooping && Duration > TimeSpan.Zero)
+            {
+                return TimeSpan.FromSeconds(elapsed.TotalSeconds % Duration.TotalSeconds);
+            }
+
             return elapsed < Duration ? elapsed : Duration;
         }
     }

@@ -127,14 +127,15 @@ public sealed class AudioEngine : IDisposable
     /// Returns a <see cref="Playback"/> handle representing this one trigger so
     /// callers can show progress and stop it individually.
     /// </summary>
-    public Playback Play(CachedSound sound, IEnumerable<OutputDevice> devices, float volume, string name = "")
+    public Playback Play(CachedSound sound, IEnumerable<OutputDevice> devices, float volume,
+        string name = "", bool loop = false)
     {
-        var playback = new Playback(name, sound.Duration);
+        var playback = new Playback(name, sound.Duration, loop);
 
         foreach (var device in devices.GroupBy(d => d.Id).Select(g => g.First()))
         {
             var output = new WasapiOut(device.Device, AudioClientShareMode.Shared, true, 100);
-            var source = new CachedSoundSampleProvider(sound);
+            var source = new CachedSoundSampleProvider(sound, loop);
             var volumed = new VolumeSampleProvider(source) { Volume = volume };
             output.Init(volumed.ToWaveProvider());
 

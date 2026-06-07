@@ -418,9 +418,9 @@ public partial class MainWindow : Window
             }
 
             var vol = (float)(VolumeSlider.Value / 100.0);
-            Log.Write($"  calling engine.Play with {targets.Count} target(s), vol={vol:0.00}");
-            _engine.Play(clip.Cached, targets, vol, clip.Name);
-            StatusText.Text = $"Playing \"{clip.Name}\".";
+            Log.Write($"  calling engine.Play with {targets.Count} target(s), vol={vol:0.00} loop={clip.IsLooping}");
+            _engine.Play(clip.Cached, targets, vol, clip.Name, clip.IsLooping);
+            StatusText.Text = clip.IsLooping ? $"Looping \"{clip.Name}\"." : $"Playing \"{clip.Name}\".";
         }
         catch (Exception ex)
         {
@@ -450,6 +450,15 @@ public partial class MainWindow : Window
         if (sender is MenuItem { DataContext: SoundClip })
         {
             ReorderFavorites();
+            SaveConfig();
+        }
+    }
+
+    private void OnLoopClick(object? sender, RoutedEventArgs e)
+    {
+        // IsChecked is two-way bound, so clip.IsLooping is already toggled here.
+        if (sender is MenuItem { DataContext: SoundClip })
+        {
             SaveConfig();
         }
     }
