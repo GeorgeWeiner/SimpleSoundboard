@@ -1,0 +1,75 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:SimpleSoundboard.Models"
+        xmlns:audio="clr-namespace:SimpleSoundboard.Audio"
+        mc:Ignorable="d"
+        x:Class="SimpleSoundboard.MainWindow"
+        x:DataType="models:SoundClip"
+        Title="Simple Soundboard"
+        Width="640" Height="460"
+        MinWidth="460" MinHeight="320">
+
+    <DockPanel Margin="16">
+
+        <!-- Toolbar -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8"
+                    Margin="0,0,0,12" VerticalAlignment="Center">
+            <Button Name="AddButton" Content="+ Add sound" Click="OnAddClick" />
+            <Button Name="StopButton" Content="■ Stop all" Click="OnStopClick" />
+
+            <Border Width="1" Background="#333" Margin="4,2" />
+
+            <CheckBox Name="MonitorCheck" Content="Monitor" VerticalAlignment="Center"
+                      ToolTip.Tip="Also play to a device you can hear." />
+            <ComboBox Name="MonitorDeviceCombo" Width="200" VerticalAlignment="Center"
+                      ToolTip.Tip="Which device you listen on.">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="audio:OutputDevice">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <CheckBox Name="VbCableCheck" Content="VB-Cable" VerticalAlignment="Center" />
+
+            <Border Width="1" Background="#333" Margin="4,2" />
+
+            <TextBlock Text="Volume" VerticalAlignment="Center" Opacity="0.7" />
+            <Slider Name="VolumeSlider" Width="120" Minimum="0" Maximum="100"
+                    VerticalAlignment="Center" />
+        </StackPanel>
+
+        <!-- Status line -->
+        <TextBlock DockPanel.Dock="Bottom" Name="StatusText"
+                   Text="Ready" Opacity="0.6" Margin="0,12,0,0" TextWrapping="Wrap" />
+
+        <!-- Sound buttons -->
+        <ScrollViewer>
+            <ItemsControl Name="SoundList">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:SoundClip">
+                        <Button Click="OnPlayClick"
+                                Width="140" Height="64" Margin="6"
+                                HorizontalContentAlignment="Center">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Remove" Click="OnRemoveClick" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                            <TextBlock Text="{Binding Name}" TextWrapping="Wrap"
+                                       TextAlignment="Center" />
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+    </DockPanel>
+
+</Window>
