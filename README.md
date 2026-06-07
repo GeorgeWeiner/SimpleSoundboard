@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="SimpleSoundboard/Assets/Screenshot.png" width="120" alt="Simple Soundboard logo" />
+  <img src="SimpleSoundboard/Assets/Screenshot.png" width="960" alt="Simple Soundboard logo" />
 
   # Simple Soundboard
 
