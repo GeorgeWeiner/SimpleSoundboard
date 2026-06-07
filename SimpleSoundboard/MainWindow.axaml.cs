@@ -77,6 +77,12 @@ public partial class MainWindow : Window
             }
         };
 
+        // Drag-and-drop audio files onto the window to add them.
+        DragDrop.SetAllowDrop(this, true);
+        AddHandler(DragDrop.DragOverEvent, OnDragOver);
+        AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
+        AddHandler(DragDrop.DropEvent, OnDrop);
+
         Closing += OnWindowClosing;
     }
 
@@ -381,6 +387,8 @@ public partial class MainWindow : Window
         SaveConfig();
     }
 
+    private static readonly string[] AudioExtensions = { ".wav", ".mp3", ".ogg" };
+
     private async void OnAddClick(object? sender, RoutedEventArgs e)
     {
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
@@ -396,10 +404,17 @@ public partial class MainWindow : Window
             }
         });
 
-        foreach (var file in files)
+        AddSoundFiles(files.Select(f => f.TryGetLocalPath()));
+    }
+
+    /// <summary>Adds audio files (by path) as new sounds, skipping non-audio. Returns the count added.</summary>
+    private int AddSoundFiles(IEnumerable<string?> paths)
+    {
+        int added = 0;
+        foreach (var path in paths)
         {
-            var path = file.TryGetLocalPath();
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrWhiteSpace(path) ||
+                !AudioExtensions.Contains(Path.GetExtension(path).ToLowerInvariant()))
             {
                 continue;
             }
@@ -409,9 +424,40 @@ public partial class MainWindow : Window
                 Name = Path.GetFileNameWithoutExtension(path),
                 FilePath = path
             });
+            added++;
         }
 
-        SaveConfig();
+        if (added > 0)
+        {
+            SaveConfig();
+        }
+
+        return added;
+    }
+
+    private void OnDragOver(object? sender, DragEventArgs e)
+    {
+        bool hasFiles = e.Data.Contains(DataFormats.Files);
+        e.DragEffects = hasFiles ? DragDropEffects.Copy : DragDropEffects.None;
+        DropOverlay.IsVisible = hasFiles;
+    }
+
+    private void OnDragLeave(object? sender, RoutedEventArgs e) => DropOverlay.IsVisible = false;
+
+    private void OnDrop(object? sender, DragEventArgs e)
+    {
+        DropOverlay.IsVisible = false;
+
+        var files = e.Data.GetFiles();
+        if (files is null)
+        {
+            return;
+        }
+
+        int added = AddSoundFiles(files.Select(f => f.TryGetLocalPath()));
+        StatusText.Text = added > 0
+            ? $"Added {added} sound{(added == 1 ? "" : "s")}."
+            : "No supported audio files in that drop.";
     }
 
     private void OnPlayClick(object? sender, RoutedEventArgs e)

@@ -242,6 +242,20 @@
                 </ScrollViewer>
             </DockPanel>
         </DockPanel>
+
+        <!-- Drag-and-drop overlay (shown while dragging files over the window) -->
+        <Border Name="DropOverlay" IsVisible="False" IsHitTestVisible="False"
+                CornerRadius="10" Background="#dd222021"
+                BorderBrush="{StaticResource Cream}" BorderThickness="2" Margin="6">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+                <TextBlock Text="&#xE896;" FontFamily="Segoe Fluent Icons" FontSize="44"
+                           Foreground="{StaticResource Cream}" HorizontalAlignment="Center" />
+                <TextBlock Text="Drop audio files to add" FontSize="16" FontWeight="SemiBold"
+                           Foreground="{StaticResource Cream}" HorizontalAlignment="Center" />
+                <TextBlock Text="WAV · MP3 · OGG" FontSize="12" Opacity="0.6"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
     </Panel>
 
 </Window>
