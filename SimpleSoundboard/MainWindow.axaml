@@ -75,42 +75,61 @@
                 <Border DockPanel.Dock="Top" Background="#592f4442" CornerRadius="12"
                         BorderBrush="#33efdebf" BorderThickness="1"
                         Padding="12,10" Margin="0,0,0,12">
-                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                        <Button Classes="tool" Name="AddButton" Click="OnAddClick">
-                            <StackPanel Orientation="Horizontal" Spacing="7">
-                                <TextBlock FontFamily="Segoe Fluent Icons" Text="&#xE710;"
-                                           FontSize="13" VerticalAlignment="Center" />
-                                <TextBlock Text="Add sound" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-                        <Button Classes="tool" Name="StopButton" Click="OnStopClick">
-                            <StackPanel Orientation="Horizontal" Spacing="7">
-                                <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2"
-                                           Fill="{StaticResource Cream}" VerticalAlignment="Center" />
-                                <TextBlock Text="Stop all" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
+                    <StackPanel Spacing="10">
+                        <!-- Row 1: actions -->
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <Button Classes="tool" Name="AddButton" Click="OnAddClick">
+                                <StackPanel Orientation="Horizontal" Spacing="7">
+                                    <TextBlock FontFamily="Segoe Fluent Icons" Text="&#xE710;"
+                                               FontSize="13" VerticalAlignment="Center" />
+                                    <TextBlock Text="Add sound" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="tool" Name="StopButton" Click="OnStopClick">
+                                <StackPanel Orientation="Horizontal" Spacing="7">
+                                    <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2"
+                                               Fill="{StaticResource Cream}" VerticalAlignment="Center" />
+                                    <TextBlock Text="Stop all" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
 
-                        <Border Width="1" Background="#33efdebf" Margin="4,3" />
+                            <Border Width="1" Background="#33efdebf" Margin="4,3" />
 
-                        <CheckBox Name="MonitorCheck" Content="Monitor" VerticalAlignment="Center"
-                                  ToolTip.Tip="Also play to a device you can hear." />
-                        <ComboBox Name="MonitorDeviceCombo" Width="190" VerticalAlignment="Center"
-                                  ToolTip.Tip="Which device you listen on.">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate x:DataType="audio:OutputDevice">
-                                    <TextBlock Text="{Binding Name}" />
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                        <CheckBox Name="VbCableCheck" Content="VB-Cable" VerticalAlignment="Center" />
+                            <TextBlock FontFamily="Segoe Fluent Icons" Text="&#xE767;"
+                                       VerticalAlignment="Center" FontSize="15" />
+                            <Slider Name="VolumeSlider" Width="140" Minimum="0" Maximum="100"
+                                    VerticalAlignment="Center" />
+                        </StackPanel>
 
-                        <Border Width="1" Background="#33efdebf" Margin="4,3" />
+                        <!-- Row 2: routing -->
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <CheckBox Name="MonitorCheck" Content="Monitor" VerticalAlignment="Center"
+                                      ToolTip.Tip="Also play to a device you can hear." />
+                            <ComboBox Name="MonitorDeviceCombo" Width="170" VerticalAlignment="Center"
+                                      ToolTip.Tip="Which device you listen on.">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="audio:OutputDevice">
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <CheckBox Name="VbCableCheck" Content="VB-Cable" VerticalAlignment="Center" />
 
-                        <TextBlock FontFamily="Segoe Fluent Icons" Text="&#xE767;"
-                                   VerticalAlignment="Center" FontSize="15" />
-                        <Slider Name="VolumeSlider" Width="120" Minimum="0" Maximum="100"
-                                VerticalAlignment="Center" />
+                            <Border Width="1" Background="#33efdebf" Margin="4,3" />
+
+                            <CheckBox Name="MicCheck" Content="Mic" VerticalAlignment="Center"
+                                      Click="OnMicToggle"
+                                      ToolTip.Tip="Pipe your microphone into VB-Cable alongside the sounds." />
+                            <ComboBox Name="MicDeviceCombo" Width="170" VerticalAlignment="Center"
+                                      SelectionChanged="OnMicDeviceChanged"
+                                      ToolTip.Tip="Which microphone to route.">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="audio:OutputDevice">
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

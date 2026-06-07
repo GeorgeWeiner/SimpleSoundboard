@@ -19,6 +19,12 @@ public sealed class SoundboardConfig
 
     public bool RouteToVbCable { get; set; } = true;
 
+    /// <summary>Pipe the live microphone into VB-Cable alongside the sounds.</summary>
+    public bool RouteMic { get; set; }
+
+    /// <summary>WASAPI id of the chosen mic, or null to follow the system default.</summary>
+    public string? MicDeviceId { get; set; }
+
     /// <summary>
     /// File names of bundled Assets/Sounds examples that have already been added
     /// to the board. Each default is seeded once; if the user removes it, it

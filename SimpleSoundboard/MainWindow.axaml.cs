@@ -24,6 +24,8 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _uiTimer;
     private OutputDevice? _vbCable;
     private OutputDevice? _defaultDevice;
+    private OutputDevice? _defaultMic;
+    private bool _suppressMicEvents;
 
     public MainWindow()
     {
@@ -40,8 +42,11 @@ public partial class MainWindow : Window
         VolumeSlider.Value = _config.Volume;
         MonitorCheck.IsChecked = _config.RouteToMonitor;
         VbCableCheck.IsChecked = _config.RouteToVbCable;
+        MicCheck.IsChecked = _config.RouteMic;
 
         DetectDevices();
+        DetectInputDevices();
+        ApplyMicRouting();
 
         SeedDefaultSounds();
         ReorderFavorites();
@@ -240,6 +245,110 @@ public partial class MainWindow : Window
         }
     }
 
+    private void DetectInputDevices()
+    {
+        List<OutputDevice> inputs;
+        try
+        {
+            _defaultMic = _engine.GetDefaultInputDevice();
+            // Exclude the cable's own capture side (CABLE Output) — routing it
+            // into CABLE Input would create an audio feedback loop.
+            inputs = _engine.GetInputDevices()
+                .Where(d => !d.Name.Contains("CABLE", StringComparison.OrdinalIgnoreCase)
+                            && !d.Name.Contains("VB-Audio", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Log.Write($"DetectInputDevices failed: {ex.Message}");
+            MicCheck.IsEnabled = false;
+            MicDeviceCombo.IsEnabled = false;
+            return;
+        }
+
+        _suppressMicEvents = true;
+        try
+        {
+            var pickable = new List<OutputDevice>();
+            if (_defaultMic is not null)
+            {
+                pickable.Add(_defaultMic);
+            }
+
+            pickable.AddRange(inputs);
+            MicDeviceCombo.ItemsSource = pickable;
+            MicDeviceCombo.SelectedItem =
+                pickable.FirstOrDefault(d => d.Id == _config.MicDeviceId && !d.IsDefault)
+                ?? _defaultMic
+                ?? pickable.FirstOrDefault();
+
+            // Mic routing only makes sense with both a microphone and VB-Cable.
+            bool canRoute = _vbCable is not null && pickable.Count > 0;
+            MicCheck.IsEnabled = canRoute;
+            MicDeviceCombo.IsEnabled = canRoute;
+            if (!canRoute)
+            {
+                MicCheck.IsChecked = false;
+            }
+        }
+        finally
+        {
+            _suppressMicEvents = false;
+        }
+    }
+
+    /// <summary>Starts or stops the mic-into-VB-Cable passthrough to match the UI.</summary>
+    private void ApplyMicRouting()
+    {
+        _engine.StopMicPassthrough();
+
+        if (MicCheck.IsChecked != true || _vbCable is null ||
+            MicDeviceCombo.SelectedItem is not OutputDevice mic)
+        {
+            return;
+        }
+
+        try
+        {
+            _engine.StartMicPassthrough(mic, _vbCable);
+            StatusText.Text = $"Mic → VB-Cable live ({mic.Name}).";
+        }
+        catch (Exception ex)
+        {
+            Log.Write($"Mic passthrough failed: {ex}");
+            StatusText.Text = $"Could not start mic routing: {ex.Message}";
+            _suppressMicEvents = true;
+            MicCheck.IsChecked = false;
+            _suppressMicEvents = false;
+        }
+    }
+
+    private void OnMicToggle(object? sender, RoutedEventArgs e)
+    {
+        if (_suppressMicEvents)
+        {
+            return;
+        }
+
+        ApplyMicRouting();
+        SaveConfig();
+    }
+
+    private void OnMicDeviceChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressMicEvents)
+        {
+            return;
+        }
+
+        if (MicCheck.IsChecked == true)
+        {
+            ApplyMicRouting();
+        }
+
+        SaveConfig();
+    }
+
     private async void OnAddClick(object? sender, RoutedEventArgs e)
     {
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
@@ -395,6 +504,9 @@ public partial class MainWindow : Window
         _config.RouteToVbCable = VbCableCheck.IsChecked == true;
         var selected = MonitorDeviceCombo.SelectedItem as OutputDevice;
         _config.MonitorDeviceId = selected is { IsDefault: false } ? selected.Id : null;
+        _config.RouteMic = MicCheck.IsChecked == true;
+        var mic = MicDeviceCombo.SelectedItem as OutputDevice;
+        _config.MicDeviceId = mic is { IsDefault: false } ? mic.Id : null;
         _config.Save();
     }
 }

@@ -26,10 +26,13 @@ public sealed class AudioEngine : IDisposable
 {
     private readonly MMDeviceEnumerator _enumerator = new();
     private readonly List<IWavePlayer> _active = new();
+    private readonly MicPassthrough _micPassthrough = new();
     private readonly object _lock = new();
 
     /// <summary>Raised when a new sound starts (on the calling thread).</summary>
     public event Action<Playback>? PlaybackStarted;
+
+    public bool IsMicPassthroughActive => _micPassthrough.IsActive;
 
     /// <summary>The current Windows default playback device (speakers/headphones).</summary>
     public OutputDevice GetDefaultDevice()
@@ -60,6 +63,49 @@ public sealed class AudioEngine : IDisposable
 
         return devices;
     }
+
+    /// <summary>The current default recording device (microphone), or null if none.</summary>
+    public OutputDevice? GetDefaultInputDevice()
+    {
+        try
+        {
+            var device = _enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
+            return new OutputDevice
+            {
+                Id = device.ID,
+                Name = $"Default ({device.FriendlyName})",
+                IsDefault = true,
+                Device = device
+            };
+        }
+        catch
+        {
+            return null; // no capture endpoint available
+        }
+    }
+
+    /// <summary>Enumerates all active recording endpoints (microphones).</summary>
+    public List<OutputDevice> GetInputDevices()
+    {
+        var devices = new List<OutputDevice>();
+        foreach (var device in _enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active))
+        {
+            devices.Add(new OutputDevice
+            {
+                Id = device.ID,
+                Name = device.FriendlyName,
+                Device = device
+            });
+        }
+
+        return devices;
+    }
+
+    /// <summary>Starts piping <paramref name="mic"/> into <paramref name="output"/> (VB-Cable).</summary>
+    public void StartMicPassthrough(OutputDevice mic, OutputDevice output) =>
+        _micPassthrough.Start(mic.Device, output.Device);
+
+    public void StopMicPassthrough() => _micPassthrough.Stop();
 
     /// <summary>
     /// The standard VB-CABLE input endpoint, or null if it isn't installed.
@@ -141,6 +187,7 @@ public sealed class AudioEngine : IDisposable
     public void Dispose()
     {
         StopAll();
+        _micPassthrough.Dispose();
         _enumerator.Dispose();
     }
 }
