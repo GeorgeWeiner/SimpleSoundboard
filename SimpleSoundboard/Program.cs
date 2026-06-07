@@ -24,6 +24,20 @@ internal static class Program
             return;
         }
 
+        var genIconIdx = Array.IndexOf(args, "--genicon");
+        if (genIconIdx >= 0)
+        {
+            var outPath = genIconIdx + 1 < args.Length
+                ? args[genIconIdx + 1]
+                : "Assets/logo.ico";
+            var sourcePath = Path.Combine(
+                Path.GetDirectoryName(Path.GetFullPath(outPath))!, "logo.png");
+            BuildAvaloniaApp().SetupWithoutStarting();
+            Tools.IconGenerator.Generate(sourcePath, outPath);
+            Console.WriteLine($"Wrote icon: {Path.GetFullPath(outPath)} (from {sourcePath})");
+            return;
+        }
+
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 

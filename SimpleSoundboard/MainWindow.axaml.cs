@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using SimpleSoundboard.Audio;
 using SimpleSoundboard.Controls;
@@ -24,7 +25,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Icon = RenderLogoIcon();
+        Icon = LoadIcon();
 
         _config = SoundboardConfig.Load();
         _sounds = new ObservableCollection<SoundClip>(_config.Sounds);
@@ -42,6 +43,23 @@ public partial class MainWindow : Window
     }
 
     private void UpdateEmptyHint() => EmptyHint.IsVisible = _sounds.Count == 0;
+
+    /// <summary>
+    /// Window/taskbar icon. Prefers the embedded multi-resolution .ico (crisp at
+    /// every size); falls back to rendering the vector logo if it's missing.
+    /// </summary>
+    private static WindowIcon? LoadIcon()
+    {
+        try
+        {
+            var uri = new Uri("avares://SimpleSoundboard/Assets/logo.ico");
+            return new WindowIcon(AssetLoader.Open(uri));
+        }
+        catch
+        {
+            return RenderLogoIcon();
+        }
+    }
 
     /// <summary>Renders the vector logo to a bitmap for use as the window/taskbar icon.</summary>
     private static WindowIcon? RenderLogoIcon()

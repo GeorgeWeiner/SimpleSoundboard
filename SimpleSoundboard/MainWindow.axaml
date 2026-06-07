@@ -48,7 +48,7 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="11"
                             Margin="15,0,0,0" VerticalAlignment="Center">
                     <controls:LogoControl Width="24" Height="24" />
-                    <TextBlock Text="SIMPLE SOUNDBOARD" FontSize="13" FontWeight="Bold"
+                    <TextBlock Text="SOUNDBOARD" FontSize="13" FontWeight="Bold"
                                Foreground="{StaticResource Cream}" VerticalAlignment="Center" />
                 </StackPanel>
 

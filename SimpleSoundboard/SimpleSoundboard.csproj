@@ -8,7 +8,14 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <!-- Embeds the logo into the .exe (taskbar, alt-tab, explorer). -->
+        <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
     </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Same .ico exposed to Avalonia for the runtime window icon. -->
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="11.2.3" />
