@@ -1,8 +1,13 @@
 using System.Collections.ObjectModel;
+using System.IO;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using SimpleSoundboard.Audio;
+using SimpleSoundboard.Controls;
 using SimpleSoundboard.Diagnostics;
 using SimpleSoundboard.Models;
 
@@ -19,10 +24,13 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Icon = RenderLogoIcon();
 
         _config = SoundboardConfig.Load();
         _sounds = new ObservableCollection<SoundClip>(_config.Sounds);
         SoundList.ItemsSource = _sounds;
+        _sounds.CollectionChanged += (_, _) => UpdateEmptyHint();
+        UpdateEmptyHint();
 
         VolumeSlider.Value = _config.Volume;
         MonitorCheck.IsChecked = _config.RouteToMonitor;
@@ -32,6 +40,51 @@ public partial class MainWindow : Window
 
         Closing += (_, _) => SaveConfig();
     }
+
+    private void UpdateEmptyHint() => EmptyHint.IsVisible = _sounds.Count == 0;
+
+    /// <summary>Renders the vector logo to a bitmap for use as the window/taskbar icon.</summary>
+    private static WindowIcon? RenderLogoIcon()
+    {
+        try
+        {
+            var logo = new LogoControl();
+            var size = new Size(64, 64);
+            logo.Measure(size);
+            logo.Arrange(new Rect(size));
+
+            using var bitmap = new RenderTargetBitmap(new PixelSize(64, 64), new Vector(96, 96));
+            bitmap.Render(logo);
+
+            using var stream = new MemoryStream();
+            bitmap.Save(stream);
+            stream.Position = 0;
+            return new WindowIcon(stream);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private void OnTitleBarPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            BeginMoveDrag(e);
+        }
+    }
+
+    private void OnTitleBarDoubleTapped(object? sender, TappedEventArgs e) => ToggleMaximize();
+
+    private void OnMinimize(object? sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+
+    private void OnMaximize(object? sender, RoutedEventArgs e) => ToggleMaximize();
+
+    private void OnClose(object? sender, RoutedEventArgs e) => Close();
+
+    private void ToggleMaximize() =>
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
 
     private void DetectDevices()
     {

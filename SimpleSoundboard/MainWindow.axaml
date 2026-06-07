@@ -4,72 +4,150 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:models="clr-namespace:SimpleSoundboard.Models"
         xmlns:audio="clr-namespace:SimpleSoundboard.Audio"
+        xmlns:controls="clr-namespace:SimpleSoundboard.Controls"
         mc:Ignorable="d"
         x:Class="SimpleSoundboard.MainWindow"
         x:DataType="models:SoundClip"
         Title="Simple Soundboard"
-        Width="640" Height="460"
-        MinWidth="460" MinHeight="320">
+        Width="680" Height="500"
+        MinWidth="480" MinHeight="340"
+        Foreground="{StaticResource Cream}"
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1">
 
-    <DockPanel Margin="16">
+    <Panel>
+        <!-- Glass background tinted with the darkest palette colour -->
+        <ExperimentalAcrylicBorder IsHitTestVisible="False" CornerRadius="10">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial BackgroundSource="Digger"
+                                             TintColor="#222021"
+                                             TintOpacity="1"
+                                             MaterialOpacity="0.62" />
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
 
-        <!-- Toolbar -->
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8"
-                    Margin="0,0,0,12" VerticalAlignment="Center">
-            <Button Name="AddButton" Content="+ Add sound" Click="OnAddClick" />
-            <Button Name="StopButton" Content="■ Stop all" Click="OnStopClick" />
+        <!-- Subtle top-down depth gradient -->
+        <Border CornerRadius="10" IsHitTestVisible="False">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#403f5d4d" Offset="0" />
+                    <GradientStop Color="#00222021" Offset="0.45" />
+                    <GradientStop Color="#33222021" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
 
-            <Border Width="1" Background="#333" Margin="4,2" />
+        <DockPanel>
+            <!-- Custom title bar -->
+            <Grid DockPanel.Dock="Top" Height="44" Name="TitleBar" Background="Transparent"
+                  ColumnDefinitions="Auto,*,Auto"
+                  PointerPressed="OnTitleBarPressed" DoubleTapped="OnTitleBarDoubleTapped">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="11"
+                            Margin="15,0,0,0" VerticalAlignment="Center">
+                    <controls:LogoControl Width="24" Height="24" />
+                    <TextBlock Text="SIMPLE SOUNDBOARD" FontSize="13" FontWeight="Bold"
+                               Foreground="{StaticResource Cream}" VerticalAlignment="Center" />
+                </StackPanel>
 
-            <CheckBox Name="MonitorCheck" Content="Monitor" VerticalAlignment="Center"
-                      ToolTip.Tip="Also play to a device you can hear." />
-            <ComboBox Name="MonitorDeviceCombo" Width="200" VerticalAlignment="Center"
-                      ToolTip.Tip="Which device you listen on.">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate x:DataType="audio:OutputDevice">
-                        <TextBlock Text="{Binding Name}" />
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
-            <CheckBox Name="VbCableCheck" Content="VB-Cable" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Button Classes="chrome" Click="OnMinimize" FontFamily="Segoe Fluent Icons"
+                            Content="&#xE921;" ToolTip.Tip="Minimize" />
+                    <Button Classes="chrome" Click="OnMaximize" FontFamily="Segoe Fluent Icons"
+                            Content="&#xE922;" ToolTip.Tip="Maximize" />
+                    <Button Classes="chrome close" Click="OnClose" FontFamily="Segoe Fluent Icons"
+                            Content="&#xE8BB;" ToolTip.Tip="Close" />
+                </StackPanel>
+            </Grid>
 
-            <Border Width="1" Background="#333" Margin="4,2" />
+            <!-- Status line -->
+            <Border DockPanel.Dock="Bottom" BorderBrush="#33efdebf" BorderThickness="0,1,0,0"
+                    Padding="18,9">
+                <TextBlock Name="StatusText" Text="Ready" Opacity="0.65" FontSize="12"
+                           TextWrapping="Wrap" />
+            </Border>
 
-            <TextBlock Text="Volume" VerticalAlignment="Center" Opacity="0.7" />
-            <Slider Name="VolumeSlider" Width="120" Minimum="0" Maximum="100"
-                    VerticalAlignment="Center" />
-        </StackPanel>
-
-        <!-- Status line -->
-        <TextBlock DockPanel.Dock="Bottom" Name="StatusText"
-                   Text="Ready" Opacity="0.6" Margin="0,12,0,0" TextWrapping="Wrap" />
-
-        <!-- Sound buttons -->
-        <ScrollViewer>
-            <ItemsControl Name="SoundList">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="models:SoundClip">
-                        <Button Click="OnPlayClick"
-                                Width="140" Height="64" Margin="6"
-                                HorizontalContentAlignment="Center">
-                            <Button.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="Remove" Click="OnRemoveClick" />
-                                </ContextMenu>
-                            </Button.ContextMenu>
-                            <TextBlock Text="{Binding Name}" TextWrapping="Wrap"
-                                       TextAlignment="Center" />
+            <!-- Body -->
+            <DockPanel Margin="16,6,16,8">
+                <!-- Toolbar card -->
+                <Border DockPanel.Dock="Top" Background="#592f4442" CornerRadius="12"
+                        BorderBrush="#33efdebf" BorderThickness="1"
+                        Padding="12,10" Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <Button Classes="tool" Name="AddButton" Click="OnAddClick">
+                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                <TextBlock FontFamily="Segoe Fluent Icons" Text="&#xE710;"
+                                           FontSize="13" VerticalAlignment="Center" />
+                                <TextBlock Text="Add sound" VerticalAlignment="Center" />
+                            </StackPanel>
                         </Button>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+                        <Button Classes="tool" Name="StopButton" Click="OnStopClick">
+                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2"
+                                           Fill="{StaticResource Cream}" VerticalAlignment="Center" />
+                                <TextBlock Text="Stop all" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
 
-    </DockPanel>
+                        <Border Width="1" Background="#33efdebf" Margin="4,3" />
+
+                        <CheckBox Name="MonitorCheck" Content="Monitor" VerticalAlignment="Center"
+                                  ToolTip.Tip="Also play to a device you can hear." />
+                        <ComboBox Name="MonitorDeviceCombo" Width="190" VerticalAlignment="Center"
+                                  ToolTip.Tip="Which device you listen on.">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="audio:OutputDevice">
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <CheckBox Name="VbCableCheck" Content="VB-Cable" VerticalAlignment="Center" />
+
+                        <Border Width="1" Background="#33efdebf" Margin="4,3" />
+
+                        <TextBlock FontFamily="Segoe Fluent Icons" Text="&#xE767;"
+                                   VerticalAlignment="Center" FontSize="15" />
+                        <Slider Name="VolumeSlider" Width="120" Minimum="0" Maximum="100"
+                                VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Sound grid -->
+                <ScrollViewer>
+                    <Panel>
+                        <TextBlock Name="EmptyHint"
+                                   Text="No sounds yet — hit &quot;Add sound&quot; to drop some in."
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Margin="0,40,0,0" Opacity="0.4" FontSize="14"
+                                   IsVisible="False" />
+                        <ItemsControl Name="SoundList">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:SoundClip">
+                                    <Button Classes="sound" Click="OnPlayClick"
+                                            Width="148" Height="68" Margin="6"
+                                            HorizontalContentAlignment="Center">
+                                        <Button.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Remove" Click="OnRemoveClick" />
+                                            </ContextMenu>
+                                        </Button.ContextMenu>
+                                        <TextBlock Text="{Binding Name}" TextWrapping="Wrap"
+                                                   TextAlignment="Center" MaxLines="3" />
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Panel>
+                </ScrollViewer>
+            </DockPanel>
+        </DockPanel>
+    </Panel>
 
 </Window>

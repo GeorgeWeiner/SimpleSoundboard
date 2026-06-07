@@ -3,8 +3,111 @@
              x:Class="SimpleSoundboard.App"
              RequestedThemeVariant="Dark">
 
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Deadlock palette -->
+            <SolidColorBrush x:Key="Cream" Color="#efdebf" />
+            <SolidColorBrush x:Key="Sage" Color="#72947f" />
+            <SolidColorBrush x:Key="Primary" Color="#3f5d4d" />
+            <SolidColorBrush x:Key="Surface" Color="#2f4442" />
+            <SolidColorBrush x:Key="Ink" Color="#222021" />
+
+            <!-- Make Fluent's built-in controls (checkbox, slider, combobox) adopt
+                 the sage accent automatically, so we don't have to restyle each. -->
+            <Color x:Key="SystemAccentColor">#72947f</Color>
+            <Color x:Key="SystemAccentColorLight1">#86a892</Color>
+            <Color x:Key="SystemAccentColorLight2">#9bbca6</Color>
+            <Color x:Key="SystemAccentColorDark1">#5e7e6a</Color>
+            <Color x:Key="SystemAccentColorDark2">#3f5d4d</Color>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
+
+        <!-- Default text -->
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Cream}" />
+        </Style>
+
+        <!-- Sound trigger buttons -->
+        <Style Selector="Button.sound">
+            <Setter Property="Background" Value="{StaticResource Primary}" />
+            <Setter Property="Foreground" Value="{StaticResource Cream}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Sage}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.16" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.sound /template/ ContentPresenter">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.16" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.sound:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Sage}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Cream}" />
+        </Style>
+        <Style Selector="Button.sound:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+        </Style>
+
+        <!-- Toolbar (ghost) buttons -->
+        <Style Selector="Button.tool">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Cream}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Sage}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,7" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.tool:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Primary}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Cream}" />
+        </Style>
+
+        <!-- Window chrome buttons (min / max / close) -->
+        <Style Selector="Button.chrome">
+            <Setter Property="Width" Value="44" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Cream}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="Button.chrome:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Primary}" />
+        </Style>
+        <Style Selector="Button.chrome.close:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#9c4a43" />
+        </Style>
+
+        <!-- ComboBox surface -->
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="Foreground" Value="{StaticResource Cream}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Sage}" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+
+        <!-- CheckBox text -->
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource Cream}" />
+        </Style>
     </Application.Styles>
 
 </Application>

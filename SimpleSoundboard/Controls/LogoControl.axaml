@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SimpleSoundboard.Controls.LogoControl">
+    <!-- Art-deco diamond with an equalizer motif. Pure vector so it scales and
+         doubles as the window icon (rendered to a bitmap at runtime). -->
+    <Viewbox Stretch="Uniform">
+        <Canvas Width="64" Height="64">
+            <Path Data="M32,3 L61,32 L32,61 L3,32 Z"
+                  Fill="#2f4442" Stroke="#72947f" StrokeThickness="3"
+                  StrokeJoin="Round" />
+            <Path Data="M32,13 L51,32 L32,51 L13,32 Z"
+                  Stroke="#3f5d4d" StrokeThickness="1.5" StrokeJoin="Round" />
+            <Rectangle Canvas.Left="20.5" Canvas.Top="26" Width="5" Height="13"
+                       RadiusX="2.5" RadiusY="2.5" Fill="#72947f" />
+            <Rectangle Canvas.Left="28.5" Canvas.Top="20" Width="6" Height="24"
+                       RadiusX="3" RadiusY="3" Fill="#efdebf" />
+            <Rectangle Canvas.Left="37.5" Canvas.Top="24" Width="5" Height="17"
+                       RadiusX="2.5" RadiusY="2.5" Fill="#72947f" />
+        </Canvas>
+    </Viewbox>
+</UserControl>
