@@ -158,16 +158,18 @@
                                                                Fill="{StaticResource Cream}" />
                                                 </Button>
                                                 <StackPanel Spacing="6">
-                                                    <StackPanel Orientation="Horizontal" Spacing="5">
-                                                        <TextBlock Text="&#xE8EE;"
+                                                    <DockPanel>
+                                                        <TextBlock DockPanel.Dock="Left" Text="&#xE8EE;"
                                                                    FontFamily="Segoe Fluent Icons"
-                                                                   FontSize="11" VerticalAlignment="Center"
-                                                                   Opacity="0.85"
+                                                                   FontSize="11" VerticalAlignment="Top"
+                                                                   Margin="0,1,5,0" Opacity="0.85"
                                                                    IsVisible="{Binding IsLooping}" />
                                                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
-                                                                   FontSize="12"
-                                                                   TextTrimming="CharacterEllipsis" />
-                                                    </StackPanel>
+                                                                   FontSize="12" TextWrapping="Wrap"
+                                                                   MaxLines="2"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   ToolTip.Tip="{Binding Name}" />
+                                                    </DockPanel>
                                                     <ProgressBar Minimum="0" Maximum="1"
                                                                  Value="{Binding Progress}" Height="4"
                                                                  MinWidth="0" HorizontalAlignment="Stretch"
