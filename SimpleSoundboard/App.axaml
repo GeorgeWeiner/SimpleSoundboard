@@ -2,39 +2,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="SimpleSoundboard.App"
              RequestedThemeVariant="Dark">
-
-    <Application.Resources>
-        <ResourceDictionary>
-            <!-- Deadlock palette -->
-            <SolidColorBrush x:Key="Cream" Color="#efdebf" />
-            <SolidColorBrush x:Key="Sage" Color="#72947f" />
-            <SolidColorBrush x:Key="Primary" Color="#3f5d4d" />
-            <SolidColorBrush x:Key="Surface" Color="#2f4442" />
-            <SolidColorBrush x:Key="Ink" Color="#222021" />
-
-            <!-- Make Fluent's built-in controls (checkbox, slider, combobox) adopt
-                 the sage accent automatically, so we don't have to restyle each. -->
-            <Color x:Key="SystemAccentColor">#72947f</Color>
-            <Color x:Key="SystemAccentColorLight1">#86a892</Color>
-            <Color x:Key="SystemAccentColorLight2">#9bbca6</Color>
-            <Color x:Key="SystemAccentColorDark1">#5e7e6a</Color>
-            <Color x:Key="SystemAccentColorDark2">#3f5d4d</Color>
-        </ResourceDictionary>
-    </Application.Resources>
+    <!-- Theme colours are supplied at runtime by ThemeManager (see Theming/).
+         All references below use DynamicResource so switching themes is live. -->
 
     <Application.Styles>
         <FluentTheme />
 
         <!-- Default text -->
         <Style Selector="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource Cream}" />
+            <Setter Property="Foreground" Value="{DynamicResource Cream}" />
         </Style>
 
         <!-- Sound trigger buttons -->
         <Style Selector="Button.sound">
-            <Setter Property="Background" Value="{StaticResource Primary}" />
-            <Setter Property="Foreground" Value="{StaticResource Cream}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Sage}" />
+            <Setter Property="Background" Value="{DynamicResource Primary}" />
+            <Setter Property="Foreground" Value="{DynamicResource Cream}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Sage}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -54,30 +37,30 @@
             </Setter>
         </Style>
         <Style Selector="Button.sound:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource Sage}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Cream}" />
+            <Setter Property="Background" Value="{DynamicResource PrimaryHover}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Cream}" />
         </Style>
         <Style Selector="Button.sound:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="Background" Value="{DynamicResource Surface}" />
         </Style>
         <Style Selector="Button.sound.selected /template/ ContentPresenter">
-            <Setter Property="BorderBrush" Value="{StaticResource Cream}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Cream}" />
             <Setter Property="BorderThickness" Value="2" />
         </Style>
 
         <!-- Toolbar (ghost) buttons -->
         <Style Selector="Button.tool">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource Cream}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Sage}" />
+            <Setter Property="Foreground" Value="{DynamicResource Cream}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Sage}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="12,7" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="Button.tool:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource Primary}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Cream}" />
+            <Setter Property="Background" Value="{DynamicResource Primary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Cream}" />
         </Style>
 
         <!-- Window chrome buttons (min / max / close) -->
@@ -85,7 +68,7 @@
             <Setter Property="Width" Value="44" />
             <Setter Property="Height" Value="32" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource Cream}" />
+            <Setter Property="Foreground" Value="{DynamicResource Cream}" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="0" />
             <Setter Property="Padding" Value="0" />
@@ -94,7 +77,7 @@
             <Setter Property="FontSize" Value="12" />
         </Style>
         <Style Selector="Button.chrome:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource Primary}" />
+            <Setter Property="Background" Value="{DynamicResource Primary}" />
         </Style>
         <Style Selector="Button.chrome.close:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#9c4a43" />
@@ -103,7 +86,7 @@
         <!-- Category tabs -->
         <Style Selector="Button.tab">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource Cream}" />
+            <Setter Property="Foreground" Value="{DynamicResource Cream}" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="12,6" />
@@ -112,10 +95,10 @@
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="Button.tab:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#552f4442" />
+            <Setter Property="Background" Value="{DynamicResource HoverSurface}" />
         </Style>
         <Style Selector="Button.tab.active /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource Primary}" />
+            <Setter Property="Background" Value="{DynamicResource Primary}" />
         </Style>
 
         <!-- Mini icon buttons (e.g. per-sound stop in Now Playing) -->
@@ -128,20 +111,39 @@
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="Button.mini:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#55222021" />
+            <Setter Property="Background" Value="{DynamicResource HoverInk}" />
+        </Style>
+
+        <!-- Theme rows in Settings -->
+        <Style Selector="Button.themerow">
+            <Setter Property="Background" Value="{DynamicResource Surface}" />
+            <Setter Property="Foreground" Value="{DynamicResource Cream}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Hairline}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="Button.themerow:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource PrimaryHover}" />
+        </Style>
+        <Style Selector="Button.themerow.active">
+            <Setter Property="BorderBrush" Value="{DynamicResource Cream}" />
+            <Setter Property="BorderThickness" Value="2" />
         </Style>
 
         <!-- ComboBox surface -->
         <Style Selector="ComboBox">
-            <Setter Property="Background" Value="{StaticResource Surface}" />
-            <Setter Property="Foreground" Value="{StaticResource Cream}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Sage}" />
+            <Setter Property="Background" Value="{DynamicResource Surface}" />
+            <Setter Property="Foreground" Value="{DynamicResource Cream}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Sage}" />
             <Setter Property="CornerRadius" Value="8" />
         </Style>
 
         <!-- CheckBox text -->
         <Style Selector="CheckBox">
-            <Setter Property="Foreground" Value="{StaticResource Cream}" />
+            <Setter Property="Foreground" Value="{DynamicResource Cream}" />
         </Style>
     </Application.Styles>
 

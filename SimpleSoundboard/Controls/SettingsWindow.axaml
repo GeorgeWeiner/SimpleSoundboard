@@ -1,0 +1,46 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:theming="clr-namespace:SimpleSoundboard.Theming"
+        x:Class="SimpleSoundboard.Controls.SettingsWindow"
+        Title="Settings"
+        Width="430" Height="560" CanResize="False"
+        ShowInTaskbar="False" WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Ink}">
+
+    <DockPanel Margin="18">
+        <TextBlock DockPanel.Dock="Top" Text="Theme" FontSize="16" FontWeight="Bold"
+                   Foreground="{DynamicResource Cream}" Margin="0,0,0,12" />
+        <Button DockPanel.Dock="Bottom" Classes="tool" Content="Close" Click="OnCloseClick"
+                HorizontalAlignment="Right" Margin="0,12,0,0" />
+
+        <ScrollViewer>
+            <ItemsControl Name="ThemeList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="theming:ThemeOption">
+                        <Button Classes="themerow" Classes.active="{Binding IsCurrent}"
+                                Click="OnThemeClick" Margin="0,0,0,8">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                                            Spacing="4" VerticalAlignment="Center">
+                                    <Border Width="20" Height="20" CornerRadius="4"
+                                            Background="{Binding Theme.Background, Converter={x:Static theming:Converters.ColorToBrush}}" />
+                                    <Border Width="20" Height="20" CornerRadius="4"
+                                            Background="{Binding Theme.Surface, Converter={x:Static theming:Converters.ColorToBrush}}" />
+                                    <Border Width="20" Height="20" CornerRadius="4"
+                                            Background="{Binding Theme.Primary, Converter={x:Static theming:Converters.ColorToBrush}}" />
+                                    <Border Width="20" Height="20" CornerRadius="4"
+                                            Background="{Binding Theme.Accent, Converter={x:Static theming:Converters.ColorToBrush}}" />
+                                    <Border Width="20" Height="20" CornerRadius="4"
+                                            Background="{Binding Theme.Text, Converter={x:Static theming:Converters.ColorToBrush}}" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding Theme.Name}" VerticalAlignment="Center"
+                                           FontWeight="SemiBold" />
+                            </DockPanel>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+
+</Window>

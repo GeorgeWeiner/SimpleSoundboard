@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
@@ -12,6 +13,7 @@ using SimpleSoundboard.Audio;
 using SimpleSoundboard.Controls;
 using SimpleSoundboard.Diagnostics;
 using SimpleSoundboard.Models;
+using SimpleSoundboard.Theming;
 
 namespace SimpleSoundboard;
 
@@ -39,6 +41,7 @@ public partial class MainWindow : Window
         Icon = LoadIcon();
 
         _config = SoundboardConfig.Load();
+        UpdateWindowChrome(Themes.ByName(_config.Theme)); // resources already set by App
         _sounds = new ObservableCollection<SoundClip>(_config.Sounds);
         SoundList.ItemsSource = _visibleSounds;
         CategoryTabs.ItemsSource = _tabs;
@@ -388,6 +391,44 @@ public partial class MainWindow : Window
     private void OnMaximize(object? sender, RoutedEventArgs e) => ToggleMaximize();
 
     private void OnClose(object? sender, RoutedEventArgs e) => Close();
+
+    private async void OnSettings(object? sender, RoutedEventArgs e)
+    {
+        var dialog = new SettingsWindow(_config.Theme, ApplyTheme);
+        await dialog.ShowDialog(this);
+    }
+
+    /// <summary>Applies a theme live: resources, window chrome, and persistence.</summary>
+    private void ApplyTheme(Theme theme)
+    {
+        ThemeManager.Apply(Application.Current!, theme);
+        UpdateWindowChrome(theme);
+        _config.Theme = theme.Name;
+        SaveConfig();
+    }
+
+    /// <summary>Re-tints the acrylic glass and the depth gradient for a theme.</summary>
+    private void UpdateWindowChrome(Theme theme)
+    {
+        if (AcrylicBorder.Material is ExperimentalAcrylicMaterial material)
+        {
+            material.TintColor = theme.Background;
+        }
+
+        var bg = theme.Background;
+        var primary = theme.Primary;
+        BackgroundGradient.Background = new LinearGradientBrush
+        {
+            StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+            EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+            GradientStops =
+            {
+                new GradientStop(Color.FromArgb(0x40, primary.R, primary.G, primary.B), 0),
+                new GradientStop(Color.FromArgb(0x00, bg.R, bg.G, bg.B), 0.45),
+                new GradientStop(Color.FromArgb(0x33, bg.R, bg.G, bg.B), 1)
+            }
+        };
+    }
 
     private void ToggleMaximize() =>
         WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;

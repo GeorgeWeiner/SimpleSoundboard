@@ -7,6 +7,9 @@ public sealed class SoundboardConfig
 {
     public List<SoundClip> Sounds { get; set; } = new();
 
+    /// <summary>Selected colour theme name (see Theming/Theme.cs).</summary>
+    public string Theme { get; set; } = "Deadlock";
+
     /// <summary>User-defined categories, in tab order.</summary>
     public List<string> Categories { get; set; } = new();
 

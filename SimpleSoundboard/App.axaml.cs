@@ -4,6 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
+using SimpleSoundboard.Models;
+using SimpleSoundboard.Theming;
 
 namespace SimpleSoundboard;
 
@@ -21,6 +23,10 @@ public class App : Application
             // Keep the process alive when the window is closed (it hides to tray),
             // so sounds and the mic passthrough keep running in the background.
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+            // Apply the saved theme before the window loads so its DynamicResource
+            // brushes resolve immediately.
+            ThemeManager.Apply(this, Themes.ByName(SoundboardConfig.Load().Theme));
 
             var window = new MainWindow();
             desktop.MainWindow = window;

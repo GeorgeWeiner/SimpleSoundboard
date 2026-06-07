@@ -5,10 +5,10 @@
         Width="340" SizeToContent="Height"
         CanResize="False" ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
-        Background="#2f4442">
+        Background="{DynamicResource Surface}">
 
     <StackPanel Margin="18" Spacing="12">
-        <TextBlock Name="LabelText" Text="Button name" Foreground="{StaticResource Cream}"
+        <TextBlock Name="LabelText" Text="Button name" Foreground="{DynamicResource Cream}"
                    FontWeight="SemiBold" />
         <TextBox Name="NameBox" Watermark="Name" />
         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">

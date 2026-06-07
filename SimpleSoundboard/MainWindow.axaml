@@ -11,7 +11,7 @@
         Title="Simple Soundboard"
         Width="720" Height="500"
         MinWidth="600" MinHeight="360"
-        Foreground="{StaticResource Cream}"
+        Foreground="{DynamicResource Cream}"
         Background="Transparent"
         TransparencyLevelHint="AcrylicBlur"
         ExtendClientAreaToDecorationsHint="True"
@@ -19,8 +19,8 @@
         ExtendClientAreaTitleBarHeightHint="-1">
 
     <Panel>
-        <!-- Glass background tinted with the darkest palette colour -->
-        <ExperimentalAcrylicBorder IsHitTestVisible="False" CornerRadius="10">
+        <!-- Glass background, tinted with the theme background (set in code) -->
+        <ExperimentalAcrylicBorder Name="AcrylicBorder" IsHitTestVisible="False" CornerRadius="10">
             <ExperimentalAcrylicBorder.Material>
                 <ExperimentalAcrylicMaterial BackgroundSource="Digger"
                                              TintColor="#222021"
@@ -29,16 +29,8 @@
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
 
-        <!-- Subtle top-down depth gradient -->
-        <Border CornerRadius="10" IsHitTestVisible="False">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#403f5d4d" Offset="0" />
-                    <GradientStop Color="#00222021" Offset="0.45" />
-                    <GradientStop Color="#33222021" Offset="1" />
-                </LinearGradientBrush>
-            </Border.Background>
-        </Border>
+        <!-- Subtle top-down depth gradient (rebuilt per theme in code) -->
+        <Border Name="BackgroundGradient" CornerRadius="10" IsHitTestVisible="False" />
 
         <DockPanel>
             <!-- Custom title bar -->
@@ -49,10 +41,12 @@
                             Margin="15,0,0,0" VerticalAlignment="Center">
                     <controls:LogoControl Width="24" Height="24" />
                     <TextBlock Text="SOUNDBOARD" FontSize="13" FontWeight="Bold"
-                               Foreground="{StaticResource Cream}" VerticalAlignment="Center" />
+                               Foreground="{DynamicResource Cream}" VerticalAlignment="Center" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Button Classes="chrome" Click="OnSettings" FontFamily="Segoe Fluent Icons"
+                            Content="&#xE713;" ToolTip.Tip="Settings" />
                     <Button Classes="chrome" Click="OnMinimize" FontFamily="Segoe Fluent Icons"
                             Content="&#xE921;" ToolTip.Tip="Minimize" />
                     <Button Classes="chrome" Click="OnMaximize" FontFamily="Segoe Fluent Icons"
@@ -63,7 +57,7 @@
             </Grid>
 
             <!-- Status line -->
-            <Border DockPanel.Dock="Bottom" BorderBrush="#33efdebf" BorderThickness="0,1,0,0"
+            <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Hairline}" BorderThickness="0,1,0,0"
                     Padding="18,9">
                 <TextBlock Name="StatusText" Text="Ready" Opacity="0.65" FontSize="12"
                            TextWrapping="Wrap" />
@@ -72,8 +66,8 @@
             <!-- Body -->
             <DockPanel Margin="16,6,16,8">
                 <!-- Toolbar card -->
-                <Border DockPanel.Dock="Top" Background="#592f4442" CornerRadius="12"
-                        BorderBrush="#33efdebf" BorderThickness="1"
+                <Border DockPanel.Dock="Top" Background="{DynamicResource SurfaceSoft}" CornerRadius="12"
+                        BorderBrush="{DynamicResource Hairline}" BorderThickness="1"
                         Padding="12,10" Margin="0,0,0,12">
                     <StackPanel Spacing="10">
                         <!-- Row 1: actions -->
@@ -88,12 +82,12 @@
                             <Button Classes="tool" Name="StopButton" Click="OnStopClick">
                                 <StackPanel Orientation="Horizontal" Spacing="7">
                                     <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2"
-                                               Fill="{StaticResource Cream}" VerticalAlignment="Center" />
+                                               Fill="{DynamicResource Cream}" VerticalAlignment="Center" />
                                     <TextBlock Text="Stop all" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
 
-                            <Border Width="1" Background="#33efdebf" Margin="4,3" />
+                            <Border Width="1" Background="{DynamicResource Hairline}" Margin="4,3" />
 
                             <TextBlock FontFamily="Segoe Fluent Icons" Text="&#xE767;"
                                        VerticalAlignment="Center" FontSize="15" />
@@ -115,7 +109,7 @@
                             </ComboBox>
                             <CheckBox Name="VbCableCheck" Content="VB-Cable" VerticalAlignment="Center" />
 
-                            <Border Width="1" Background="#33efdebf" Margin="4,3" />
+                            <Border Width="1" Background="{DynamicResource Hairline}" Margin="4,3" />
 
                             <CheckBox Name="MicCheck" Content="Mic" VerticalAlignment="Center"
                                       Click="OnMicToggle"
@@ -135,8 +129,8 @@
 
                 <!-- Now Playing panel -->
                 <Border DockPanel.Dock="Right" Width="226" Margin="12,0,0,0"
-                        Background="#592f4442" CornerRadius="12"
-                        BorderBrush="#33efdebf" BorderThickness="1" Padding="12,10">
+                        Background="{DynamicResource SurfaceSoft}" CornerRadius="12"
+                        BorderBrush="{DynamicResource Hairline}" BorderThickness="1" Padding="12,10">
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Text="NOW PLAYING" FontWeight="Bold"
                                    FontSize="12" Opacity="0.85" Margin="2,0,2,10" />
@@ -147,7 +141,7 @@
                             <ItemsControl Name="PlayingList">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="audio:Playback">
-                                        <Border Background="#3f5d4d" CornerRadius="8"
+                                        <Border Background="{DynamicResource Primary}" CornerRadius="8"
                                                 Padding="10,8" Margin="0,0,0,8">
                                             <DockPanel>
                                                 <Button DockPanel.Dock="Right" Classes="mini"
@@ -155,7 +149,7 @@
                                                         VerticalAlignment="Top" Margin="6,0,0,0"
                                                         ToolTip.Tip="Stop">
                                                     <Rectangle Width="9" Height="9" RadiusX="2" RadiusY="2"
-                                                               Fill="{StaticResource Cream}" />
+                                                               Fill="{DynamicResource Cream}" />
                                                 </Button>
                                                 <StackPanel Spacing="6">
                                                     <DockPanel>
@@ -173,8 +167,9 @@
                                                     <ProgressBar Minimum="0" Maximum="1"
                                                                  Value="{Binding Progress}" Height="4"
                                                                  MinWidth="0" HorizontalAlignment="Stretch"
-                                                                 CornerRadius="2" Background="#33222021"
-                                                                 Foreground="{StaticResource Cream}" />
+                                                                 CornerRadius="2"
+                                                                 Background="{DynamicResource BackdropFaint}"
+                                                                 Foreground="{DynamicResource Cream}" />
                                                     <TextBlock Text="{Binding PositionText}" FontSize="10"
                                                                Opacity="0.7" />
                                                 </StackPanel>
@@ -261,12 +256,12 @@
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center" />
                                             <TextBlock Text="&#xE735;" FontFamily="Segoe Fluent Icons"
-                                                       FontSize="12" Foreground="{StaticResource Cream}"
+                                                       FontSize="12" Foreground="{DynamicResource Cream}"
                                                        HorizontalAlignment="Right" VerticalAlignment="Top"
                                                        Margin="0,-3,-3,0"
                                                        IsVisible="{Binding IsFavorite}" />
                                             <TextBlock Text="&#xE8EE;" FontFamily="Segoe Fluent Icons"
-                                                       FontSize="12" Foreground="{StaticResource Cream}"
+                                                       FontSize="12" Foreground="{DynamicResource Cream}"
                                                        HorizontalAlignment="Left" VerticalAlignment="Top"
                                                        Margin="-3,-3,0,0" Opacity="0.85"
                                                        IsVisible="{Binding IsLooping}" />
@@ -283,13 +278,13 @@
 
         <!-- Drag-and-drop overlay (shown while dragging files over the window) -->
         <Border Name="DropOverlay" IsVisible="False" IsHitTestVisible="False"
-                CornerRadius="10" Background="#dd222021"
-                BorderBrush="{StaticResource Cream}" BorderThickness="2" Margin="6">
+                CornerRadius="10" Background="{DynamicResource Overlay}"
+                BorderBrush="{DynamicResource Cream}" BorderThickness="2" Margin="6">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
                 <TextBlock Text="&#xE896;" FontFamily="Segoe Fluent Icons" FontSize="44"
-                           Foreground="{StaticResource Cream}" HorizontalAlignment="Center" />
+                           Foreground="{DynamicResource Cream}" HorizontalAlignment="Center" />
                 <TextBlock Text="Drop audio files to add" FontSize="16" FontWeight="SemiBold"
-                           Foreground="{StaticResource Cream}" HorizontalAlignment="Center" />
+                           Foreground="{DynamicResource Cream}" HorizontalAlignment="Center" />
                 <TextBlock Text="WAV · MP3 · OGG" FontSize="12" Opacity="0.6"
                            HorizontalAlignment="Center" />
             </StackPanel>
