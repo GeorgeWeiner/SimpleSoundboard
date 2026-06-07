@@ -132,14 +132,29 @@
                                 <DataTemplate x:DataType="models:SoundClip">
                                     <Button Classes="sound" Click="OnPlayClick"
                                             Width="148" Height="68" Margin="6"
-                                            HorizontalContentAlignment="Center">
+                                            HorizontalContentAlignment="Stretch"
+                                            VerticalContentAlignment="Stretch">
                                         <Button.ContextMenu>
                                             <ContextMenu>
+                                                <MenuItem Header="Rename…" Click="OnRenameClick" />
+                                                <MenuItem Header="Favorite" ToggleType="CheckBox"
+                                                          IsChecked="{Binding IsFavorite, Mode=TwoWay}"
+                                                          Click="OnFavoriteClick" />
+                                                <Separator />
                                                 <MenuItem Header="Remove" Click="OnRemoveClick" />
                                             </ContextMenu>
                                         </Button.ContextMenu>
-                                        <TextBlock Text="{Binding Name}" TextWrapping="Wrap"
-                                                   TextAlignment="Center" MaxLines="3" />
+                                        <Panel>
+                                            <TextBlock Text="{Binding Name}" TextWrapping="Wrap"
+                                                       TextAlignment="Center" MaxLines="3"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Text="&#xE735;" FontFamily="Segoe Fluent Icons"
+                                                       FontSize="12" Foreground="{StaticResource Cream}"
+                                                       HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                       Margin="0,-3,-3,0"
+                                                       IsVisible="{Binding IsFavorite}" />
+                                        </Panel>
                                     </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

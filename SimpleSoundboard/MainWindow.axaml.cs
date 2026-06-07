@@ -31,18 +31,88 @@ public partial class MainWindow : Window
         _sounds = new ObservableCollection<SoundClip>(_config.Sounds);
         SoundList.ItemsSource = _sounds;
         _sounds.CollectionChanged += (_, _) => UpdateEmptyHint();
-        UpdateEmptyHint();
 
+        // Initialise controls from config BEFORE seeding, because seeding may
+        // call SaveConfig() and that reads these controls.
         VolumeSlider.Value = _config.Volume;
         MonitorCheck.IsChecked = _config.RouteToMonitor;
         VbCableCheck.IsChecked = _config.RouteToVbCable;
 
         DetectDevices();
 
+        SeedDefaultSounds();
+        ReorderFavorites();
+        UpdateEmptyHint();
+
         Closing += (_, _) => SaveConfig();
     }
 
     private void UpdateEmptyHint() => EmptyHint.IsVisible = _sounds.Count == 0;
+
+    /// <summary>
+    /// Adds bundled example sounds from Assets/Sounds the first time each appears.
+    /// Tracks seeded file names in config so removed defaults don't come back and
+    /// newly-shipped ones are picked up on later launches.
+    /// </summary>
+    private void SeedDefaultSounds()
+    {
+        try
+        {
+            var dir = Path.Combine(AppContext.BaseDirectory, "Assets", "Sounds");
+            if (!Directory.Exists(dir))
+            {
+                return;
+            }
+
+            var extensions = new[] { ".wav", ".mp3", ".ogg" };
+            var files = Directory.EnumerateFiles(dir)
+                .Where(f => extensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
+                .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
+
+            bool added = false;
+            foreach (var file in files)
+            {
+                var fileName = Path.GetFileName(file);
+                if (_config.SeededDefaults.Contains(fileName))
+                {
+                    continue;
+                }
+
+                _sounds.Add(new SoundClip
+                {
+                    Name = Path.GetFileNameWithoutExtension(file),
+                    BuiltInFile = fileName
+                });
+                _config.SeededDefaults.Add(fileName);
+                added = true;
+            }
+
+            if (added)
+            {
+                SaveConfig();
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Write($"SeedDefaultSounds failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>Moves favorites to the front, preserving order within each group.</summary>
+    private void ReorderFavorites()
+    {
+        var sorted = _sounds.OrderByDescending(s => s.IsFavorite).ToList();
+        if (sorted.SequenceEqual(_sounds))
+        {
+            return;
+        }
+
+        _sounds.Clear();
+        foreach (var clip in sorted)
+        {
+            _sounds.Add(clip);
+        }
+    }
 
     /// <summary>
     /// Window/taskbar icon. Prefers the embedded multi-resolution .ico (crisp at
@@ -184,13 +254,13 @@ public partial class MainWindow : Window
 
         try
         {
-            Log.Write($"OnPlayClick '{clip.Name}' file='{clip.FilePath}' " +
+            Log.Write($"OnPlayClick '{clip.Name}' file='{clip.EffectivePath}' " +
                       $"monitorChecked={MonitorCheck.IsChecked} " +
                       $"monitorSel='{(MonitorDeviceCombo.SelectedItem as OutputDevice)?.Name ?? "<null>"}' " +
                       $"vbChecked={VbCableCheck.IsChecked} vb='{_vbCable?.Name ?? "<null>"}' " +
                       $"sliderValue={VolumeSlider.Value}");
 
-            clip.Cached ??= new CachedSound(clip.FilePath);
+            clip.Cached ??= new CachedSound(clip.EffectivePath);
 
             var targets = new List<OutputDevice>();
             if (MonitorCheck.IsChecked == true && MonitorDeviceCombo.SelectedItem is OutputDevice monitor)
@@ -219,6 +289,31 @@ public partial class MainWindow : Window
         {
             Log.Write($"  EXCEPTION: {ex}");
             StatusText.Text = $"Could not play \"{clip.Name}\": {ex.Message}";
+        }
+    }
+
+    private async void OnRenameClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem { DataContext: SoundClip clip })
+        {
+            return;
+        }
+
+        var newName = await new RenameDialog(clip.Name).ShowDialog<string?>(this);
+        if (!string.IsNullOrWhiteSpace(newName))
+        {
+            clip.Name = newName; // INotifyPropertyChanged updates the button text
+            SaveConfig();
+        }
+    }
+
+    private void OnFavoriteClick(object? sender, RoutedEventArgs e)
+    {
+        // IsChecked is two-way bound, so clip.IsFavorite is already toggled here.
+        if (sender is MenuItem { DataContext: SoundClip })
+        {
+            ReorderFavorites();
+            SaveConfig();
         }
     }
 

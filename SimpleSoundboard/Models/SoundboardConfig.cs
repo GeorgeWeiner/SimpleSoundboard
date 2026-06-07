@@ -19,6 +19,13 @@ public sealed class SoundboardConfig
 
     public bool RouteToVbCable { get; set; } = true;
 
+    /// <summary>
+    /// File names of bundled Assets/Sounds examples that have already been added
+    /// to the board. Each default is seeded once; if the user removes it, it
+    /// won't come back, and newly-shipped examples get added on next launch.
+    /// </summary>
+    public List<string> SeededDefaults { get; set; } = new();
+
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     private static string ConfigPath

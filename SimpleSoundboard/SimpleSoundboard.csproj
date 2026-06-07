@@ -13,8 +13,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- Same .ico exposed to Avalonia for the runtime window icon. -->
-        <AvaloniaResource Include="Assets\**" />
+        <!-- Logo assets exposed to Avalonia (window icon + title bar image). -->
+        <AvaloniaResource Include="Assets\**" Exclude="Assets\Sounds\**" />
+        <!-- Bundled example sounds: copied next to the app so they can be played
+             by file path (NAudio reads files, not embedded resources). -->
+        <None Include="Assets\Sounds\**" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
     <ItemGroup>
