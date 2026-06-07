@@ -9,8 +9,8 @@
         x:Class="SimpleSoundboard.MainWindow"
         x:DataType="models:SoundClip"
         Title="Simple Soundboard"
-        Width="680" Height="500"
-        MinWidth="480" MinHeight="340"
+        Width="720" Height="500"
+        MinWidth="600" MinHeight="360"
         Foreground="{StaticResource Cream}"
         Background="Transparent"
         TransparencyLevelHint="AcrylicBlur"
@@ -112,6 +112,51 @@
                         <Slider Name="VolumeSlider" Width="120" Minimum="0" Maximum="100"
                                 VerticalAlignment="Center" />
                     </StackPanel>
+                </Border>
+
+                <!-- Now Playing panel -->
+                <Border DockPanel.Dock="Right" Width="226" Margin="12,0,0,0"
+                        Background="#592f4442" CornerRadius="12"
+                        BorderBrush="#33efdebf" BorderThickness="1" Padding="12,10">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="NOW PLAYING" FontWeight="Bold"
+                                   FontSize="12" Opacity="0.85" Margin="2,0,2,10" />
+                        <TextBlock DockPanel.Dock="Top" Name="NowPlayingEmpty"
+                                   Text="Nothing playing right now." Opacity="0.4" FontSize="12"
+                                   Margin="2" TextWrapping="Wrap" />
+                        <ScrollViewer>
+                            <ItemsControl Name="PlayingList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="audio:Playback">
+                                        <Border Background="#3f5d4d" CornerRadius="8"
+                                                Padding="10,8" Margin="0,0,0,8">
+                                            <DockPanel>
+                                                <Button DockPanel.Dock="Right" Classes="mini"
+                                                        Click="OnStopPlayback" Width="26" Height="26"
+                                                        VerticalAlignment="Top" Margin="6,0,0,0"
+                                                        ToolTip.Tip="Stop">
+                                                    <Rectangle Width="9" Height="9" RadiusX="2" RadiusY="2"
+                                                               Fill="{StaticResource Cream}" />
+                                                </Button>
+                                                <StackPanel Spacing="6">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                               FontSize="12"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <ProgressBar Minimum="0" Maximum="1"
+                                                                 Value="{Binding Progress}" Height="4"
+                                                                 MinWidth="0" HorizontalAlignment="Stretch"
+                                                                 CornerRadius="2" Background="#33222021"
+                                                                 Foreground="{StaticResource Cream}" />
+                                                    <TextBlock Text="{Binding PositionText}" FontSize="10"
+                                                               Opacity="0.7" />
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
                 </Border>
 
                 <!-- Sound grid -->

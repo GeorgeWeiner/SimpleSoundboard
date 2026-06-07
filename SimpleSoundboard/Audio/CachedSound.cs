@@ -13,6 +13,10 @@ public sealed class CachedSound
     public float[] AudioData { get; }
     public WaveFormat WaveFormat { get; }
 
+    /// <summary>Total play length, derived from the decoded sample count.</summary>
+    public TimeSpan Duration => TimeSpan.FromSeconds(
+        AudioData.Length / (double)(WaveFormat.SampleRate * WaveFormat.Channels));
+
     public CachedSound(string filePath)
     {
         var (sampleProvider, disposable) = CreateReader(filePath);

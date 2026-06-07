@@ -28,6 +28,9 @@ public sealed class AudioEngine : IDisposable
     private readonly List<IWavePlayer> _active = new();
     private readonly object _lock = new();
 
+    /// <summary>Raised when a new sound starts (on the calling thread).</summary>
+    public event Action<Playback>? PlaybackStarted;
+
     /// <summary>The current Windows default playback device (speakers/headphones).</summary>
     public OutputDevice GetDefaultDevice()
     {
@@ -73,9 +76,15 @@ public sealed class AudioEngine : IDisposable
             ?? list.FirstOrDefault(d => d.Name.Contains("VB-Audio", StringComparison.OrdinalIgnoreCase));
     }
 
-    /// <summary>Plays <paramref name="sound"/> to each device at the given volume (0..1).</summary>
-    public void Play(CachedSound sound, IEnumerable<OutputDevice> devices, float volume)
+    /// <summary>
+    /// Plays <paramref name="sound"/> to each device at the given volume (0..1).
+    /// Returns a <see cref="Playback"/> handle representing this one trigger so
+    /// callers can show progress and stop it individually.
+    /// </summary>
+    public Playback Play(CachedSound sound, IEnumerable<OutputDevice> devices, float volume, string name = "")
     {
+        var playback = new Playback(name, sound.Duration);
+
         foreach (var device in devices.GroupBy(d => d.Id).Select(g => g.First()))
         {
             var output = new WasapiOut(device.Device, AudioClientShareMode.Shared, true, 100);
@@ -87,6 +96,7 @@ public sealed class AudioEngine : IDisposable
                       $"srcFmt={sound.WaveFormat.Encoding} {sound.WaveFormat.SampleRate}Hz " +
                       $"{sound.WaveFormat.Channels}ch samples={sound.AudioData.Length}");
 
+            // Engine-level tracking for StopAll. The Playback owns disposal.
             output.PlaybackStopped += (_, e) =>
             {
                 Log.Write(e.Exception is null
@@ -97,8 +107,6 @@ public sealed class AudioEngine : IDisposable
                 {
                     _active.Remove(output);
                 }
-
-                output.Dispose();
             };
 
             lock (_lock)
@@ -106,9 +114,13 @@ public sealed class AudioEngine : IDisposable
                 _active.Add(output);
             }
 
+            playback.Add(output);
             output.Play();
             Log.Write($"  Play() called, state={output.PlaybackState} on '{device.Name}'");
         }
+
+        PlaybackStarted?.Invoke(playback);
+        return playback;
     }
 
     /// <summary>Stops every currently-playing sound.</summary>

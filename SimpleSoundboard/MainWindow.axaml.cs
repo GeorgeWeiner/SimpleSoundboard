@@ -7,6 +7,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using SimpleSoundboard.Audio;
 using SimpleSoundboard.Controls;
 using SimpleSoundboard.Diagnostics;
@@ -19,6 +20,8 @@ public partial class MainWindow : Window
     private readonly AudioEngine _engine = new();
     private readonly SoundboardConfig _config;
     private readonly ObservableCollection<SoundClip> _sounds;
+    private readonly ObservableCollection<Playback> _playing = new();
+    private readonly DispatcherTimer _uiTimer;
     private OutputDevice? _vbCable;
     private OutputDevice? _defaultDevice;
 
@@ -43,6 +46,31 @@ public partial class MainWindow : Window
         SeedDefaultSounds();
         ReorderFavorites();
         UpdateEmptyHint();
+
+        // Now Playing panel
+        PlayingList.ItemsSource = _playing;
+        NowPlayingEmpty.IsVisible = true;
+        _engine.PlaybackStarted += OnPlaybackStarted;
+        _uiTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+        _uiTimer.Tick += (_, _) =>
+        {
+            foreach (var playback in _playing)
+            {
+                playback.Tick();
+            }
+        };
+        _playing.CollectionChanged += (_, _) =>
+        {
+            NowPlayingEmpty.IsVisible = _playing.Count == 0;
+            if (_playing.Count > 0)
+            {
+                _uiTimer.Start();
+            }
+            else
+            {
+                _uiTimer.Stop();
+            }
+        };
 
         Closing += (_, _) => SaveConfig();
     }
@@ -282,7 +310,7 @@ public partial class MainWindow : Window
 
             var vol = (float)(VolumeSlider.Value / 100.0);
             Log.Write($"  calling engine.Play with {targets.Count} target(s), vol={vol:0.00}");
-            _engine.Play(clip.Cached, targets, vol);
+            _engine.Play(clip.Cached, targets, vol, clip.Name);
             StatusText.Text = $"Playing \"{clip.Name}\".";
         }
         catch (Exception ex)
@@ -330,6 +358,33 @@ public partial class MainWindow : Window
     {
         _engine.StopAll();
         StatusText.Text = "Stopped.";
+    }
+
+    // --- Now Playing ---
+
+    private void OnPlaybackStarted(Playback playback)
+    {
+        // Play() is invoked on the UI thread, so we can touch the collection here.
+        playback.Finished += OnPlaybackFinished;
+        _playing.Add(playback);
+    }
+
+    private void OnPlaybackFinished(Playback playback)
+    {
+        // Fired from the audio thread — marshal back to the UI thread to remove it.
+        Dispatcher.UIThread.Post(() =>
+        {
+            playback.Finished -= OnPlaybackFinished;
+            _playing.Remove(playback);
+        });
+    }
+
+    private void OnStopPlayback(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button { DataContext: Playback playback })
+        {
+            playback.Stop();
+        }
     }
 
     private void SaveConfig()
